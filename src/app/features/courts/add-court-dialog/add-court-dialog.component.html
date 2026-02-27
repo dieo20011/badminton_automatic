@@ -1,0 +1,54 @@
+<div class="dialog-overlay" (click)="onClose()">
+    <div class="dialog-content" (click)="$event.stopPropagation()">
+        <div class="dialog-header">
+            <h2>Thêm Sân Mới</h2>
+            <button class="close-button" (click)="onClose()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+
+        <form [formGroup]="courtForm" (ngSubmit)="onSubmit()" class="dialog-form">
+            <div class="form-group">
+                <label for="courtName">Tên sân</label>
+                <input id="courtName" type="text" formControlName="name" placeholder="VD: Sân A - Tầng 1"
+                    [class.error]="name?.invalid && name?.touched" />
+                <div class="error-message" *ngIf="name?.invalid && name?.touched">
+                    <span *ngIf="name?.errors?.['required']">Vui lòng nhập tên sân</span>
+                    <span *ngIf="name?.errors?.['minlength']">Tên sân phải có ít nhất 3 ký tự</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="courtPassword">Mật khẩu</label>
+                <input id="courtPassword" type="password" formControlName="password"
+                    placeholder="Nhập mật khẩu để bảo vệ sân" [class.error]="password?.invalid && password?.touched" />
+                <div class="error-message" *ngIf="password?.invalid && password?.touched">
+                    <span *ngIf="password?.errors?.['required']">Vui lòng nhập mật khẩu</span>
+                    <span *ngIf="password?.errors?.['minlength']">Mật khẩu phải có ít nhất 4 ký tự</span>
+                </div>
+                <p class="hint">Mật khẩu này sẽ được sử dụng để xác thực admin phụ khi truy cập sân</p>
+            </div>
+
+            <div class="dialog-actions">
+                <button type="button" class="cancel-button" (click)="onClose()" [disabled]="isSubmitting">
+                    Hủy
+                </button>
+                <button type="submit" class="submit-button" [disabled]="isSubmitting">
+                    <span *ngIf="!isSubmitting">Tạo Sân</span>
+                    <span *ngIf="isSubmitting" class="loading-spinner">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
+                                opacity="0.25" />
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none"
+                                stroke-linecap="round" />
+                        </svg>
+                        Đang tạo...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
