@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginRequest } from '../../../core/models/user.model';
+import { noWhitespaceValidator } from '../../../core/validators/form.validators';
 
 @Component({
     selector: 'app-login',
@@ -24,8 +25,8 @@ export class LoginComponent {
         private route: ActivatedRoute
     ) {
         this.loginForm = this.fb.group({
-            username: ['', [Validators.required, Validators.minLength(3)]],
-            password: ['', [Validators.required, Validators.minLength(4)]]
+            username: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
+            password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]]
         });
     }
 
@@ -39,8 +40,8 @@ export class LoginComponent {
         this.errorMessage = '';
 
         const request: LoginRequest = {
-            username: this.loginForm.value.username,
-            password: this.loginForm.value.password
+            username: (this.loginForm.value.username as string).trim(),
+            password: (this.loginForm.value.password as string).trim()
         };
 
         this.authService.login(request).subscribe({

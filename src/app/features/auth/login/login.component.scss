@@ -50,22 +50,24 @@
   text-align: center;
   margin-bottom: 2.5rem;
 
-  .icon-wrapper {
-    width: 80px;
-    height: 80px;
+  .avatar-wrapper {
+    width: 90px;
+    height: 90px;
     margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    padding: 3px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.45);
+    animation: pulse 3s ease-in-out infinite;
 
-    svg {
-      width: 40px;
-      height: 40px;
-      color: white;
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      border: 3px solid white;
+      display: block;
     }
   }
 

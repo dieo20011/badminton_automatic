@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CourtService } from '../../../core/services/court.service';
 import { CreateCourtRequest } from '../../../core/models/court.model';
+import { noWhitespaceValidator } from '../../../core/validators/form.validators';
 
 @Component({
     selector: 'app-add-court-dialog',
@@ -19,12 +20,12 @@ export class AddCourtDialogComponent {
     isSubmitting = false;
 
     constructor(
-        private fb: FormBuilder,
-        private courtService: CourtService
+        private readonly fb: FormBuilder,
+        private readonly courtService: CourtService
     ) {
         this.courtForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            password: ['', [Validators.required, Validators.minLength(4)]]
+            name: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
+            password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]]
         });
     }
 
@@ -41,8 +42,8 @@ export class AddCourtDialogComponent {
         this.isSubmitting = true;
 
         const request: CreateCourtRequest = {
-            name: this.courtForm.value.name,
-            password: this.courtForm.value.password
+            name: (this.courtForm.value.name as string).trim(),
+            password: (this.courtForm.value.password as string).trim()
         };
 
         this.courtService.createCourt(request).then(() => {

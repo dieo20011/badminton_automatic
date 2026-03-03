@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { noWhitespaceValidator } from '../../../core/validators/form.validators';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -61,7 +62,7 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
             displayName: ['', [Validators.maxLength(50)]]
         });
         this.addPlayerForm = this.fb.group({
-            playerName: ['', [Validators.required, Validators.minLength(2)]]
+            playerName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]]
         });
     }
 
@@ -129,7 +130,7 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         this.isAddingPlayer = true;
         const request: CreatePlayerRequest = {
             courtId: this.court.id,
-            name: this.addPlayerForm.value.playerName
+            name: (this.addPlayerForm.value.playerName as string).trim()
         };
         try {
             await this.playerService.addPlayer(request);
@@ -212,10 +213,10 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         const courtName = this.court.name;
         const courtId = this.court.id;
         this.modal.confirm({
-            nzTitle: 'Xóa sân',
-            nzContent: `Bạn có chắc muốn xóa sân "${courtName}"? Tất cả người chơi thuộc sân này cũng sẽ bị xóa.`,
-            nzOkText: 'Xóa',
-            nzCancelText: 'Hủy',
+            nzTitle: 'Delete Court',
+            nzContent: `Are you sure you want to delete "${courtName}"? All players in this court will also be removed.`,
+            nzOkText: 'Delete',
+            nzCancelText: 'Cancel',
             nzOkDanger: true,
             nzOnOk: () =>
                 this.courtService.deleteCourt(courtId).then(() => {
@@ -223,8 +224,8 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
                 }).catch((err) => {
                     console.error('Delete court failed', err);
                     this.modal.error({
-                        nzTitle: 'Không thể xóa sân',
-                        nzContent: err instanceof Error ? err.message : 'Đã xảy ra lỗi. Vui lòng thử lại.'
+                        nzTitle: 'Failed to delete court',
+                        nzContent: err instanceof Error ? err.message : 'An error occurred. Please try again.'
                     });
                     return Promise.reject(err);
                 })

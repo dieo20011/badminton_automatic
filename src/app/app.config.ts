@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -9,6 +9,7 @@ import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
 import vi from '@angular/common/locales/vi';
 import * as fnsLocale from 'date-fns/locale';
+import { apiCallInterceptor } from './core/interceptor/interceptor';
 
 registerLocaleData(en);
 registerLocaleData(vi);
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     { provide: NZ_DATE_LOCALE, useValue: fnsLocale.vi },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([apiCallInterceptor]), withInterceptorsFromDi()),
     provideAnimations(),
   ]
 };

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/user.model';
+import { noWhitespaceValidator } from '../../../core/validators/form.validators';
 
 @Component({
     selector: 'app-register',
@@ -23,10 +24,10 @@ export class RegisterComponent {
         private router: Router
     ) {
         this.registerForm = this.fb.group({
-            fullName: ['', [Validators.required, Validators.minLength(2)]],
-            userName: ['', [Validators.required, Validators.minLength(3)]],
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(4)]]
+            fullName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]],
+            userName: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
+            email: ['', [Validators.required, Validators.email, noWhitespaceValidator]],
+            password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]]
         });
     }
 
@@ -40,10 +41,10 @@ export class RegisterComponent {
         this.errorMessage = '';
 
         const request: RegisterRequest = {
-            fullName: this.registerForm.value.fullName,
-            userName: this.registerForm.value.userName,
-            email: this.registerForm.value.email,
-            password: this.registerForm.value.password
+            fullName: (this.registerForm.value.fullName as string).trim(),
+            userName: (this.registerForm.value.userName as string).trim(),
+            email: (this.registerForm.value.email as string).trim(),
+            password: (this.registerForm.value.password as string).trim()
         };
 
         this.authService.register(request).subscribe({

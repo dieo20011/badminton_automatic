@@ -1,11 +1,8 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <div class="icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 2.18l8 3.6v7.22c0 4.52-3.13 8.75-8 9.82-4.87-1.07-8-5.3-8-9.82V7.78l8-3.6z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
+      <div class="avatar-wrapper">
+        <img src="/asset/img/avata.jpg" alt="logo" class="avatar-img" />
       </div>
       <h1>Register</h1>
       <p>Create an account to manage courts</p>
@@ -22,7 +19,7 @@
           [class.error]="fullName?.invalid && fullName?.touched"
         />
         <div class="error-message" *ngIf="fullName?.invalid && fullName?.touched">
-          <span *ngIf="fullName?.errors?.['required']">Full name is required</span>
+          <span *ngIf="fullName?.errors?.['required'] || fullName?.errors?.['whitespace']">Full name is required</span>
           <span *ngIf="fullName?.errors?.['minlength']">At least 2 characters</span>
         </div>
       </div>
@@ -37,7 +34,7 @@
           [class.error]="userName?.invalid && userName?.touched"
         />
         <div class="error-message" *ngIf="userName?.invalid && userName?.touched">
-          <span *ngIf="userName?.errors?.['required']">Username is required</span>
+          <span *ngIf="userName?.errors?.['required'] || userName?.errors?.['whitespace']">Username is required</span>
           <span *ngIf="userName?.errors?.['minlength']">At least 3 characters</span>
         </div>
       </div>
@@ -52,7 +49,7 @@
           [class.error]="email?.invalid && email?.touched"
         />
         <div class="error-message" *ngIf="email?.invalid && email?.touched">
-          <span *ngIf="email?.errors?.['required']">Email is required</span>
+          <span *ngIf="email?.errors?.['required'] || email?.errors?.['whitespace']">Email is required</span>
           <span *ngIf="email?.errors?.['email']">Invalid email</span>
         </div>
       </div>
@@ -67,7 +64,7 @@
           [class.error]="password?.invalid && password?.touched"
         />
         <div class="error-message" *ngIf="password?.invalid && password?.touched">
-          <span *ngIf="password?.errors?.['required']">Password is required</span>
+          <span *ngIf="password?.errors?.['required'] || password?.errors?.['whitespace']">Password is required</span>
           <span *ngIf="password?.errors?.['minlength']">At least 4 characters</span>
         </div>
       </div>
@@ -76,7 +73,7 @@
         {{ errorMessage }}
       </div>
 
-      <button type="submit" class="register-button" [disabled]="isLoading">
+      <button type="submit" class="register-button" [disabled]="registerForm.invalid || isLoading">
         <span *ngIf="!isLoading">Register</span>
         <span *ngIf="isLoading" class="loading-spinner">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

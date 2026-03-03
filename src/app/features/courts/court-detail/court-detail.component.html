@@ -5,18 +5,18 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                 </svg>
-                Quay lại
+                Back
             </button>
             <button type="button" class="delete-court-button" (click)="deleteCourt()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                 </svg>
-                <span>Xóa sân</span>
+                <span>Delete Court</span>
             </button>
         </div>
         <div class="court-info" *ngIf="court">
             <h1>{{ court.name }}</h1>
-            <p>Quản lý người chơi và theo dõi số set</p>
+            <p>Manage players and track set scores</p>
         </div>
     </header>
 
@@ -24,25 +24,25 @@
         <div class="add-player-section">
             <form [formGroup]="addPlayerForm" (ngSubmit)="addPlayer()" class="add-player-form">
                 <div class="form-group">
-                    <input type="text" formControlName="playerName" placeholder="Nhập tên người chơi..."
+                    <input type="text" formControlName="playerName" placeholder="Enter player name..."
                         [class.error]="playerName?.invalid && playerName?.touched" />
                     <div class="error-message" *ngIf="playerName?.invalid && playerName?.touched">
-                        <span *ngIf="playerName?.errors?.['required']">Vui lòng nhập tên</span>
-                        <span *ngIf="playerName?.errors?.['minlength']">Tên phải có ít nhất 2 ký tự</span>
+                        <span *ngIf="playerName?.errors?.['required'] || playerName?.errors?.['whitespace']">Player name is required</span>
+                        <span *ngIf="playerName?.errors?.['minlength']">Name must be at least 2 characters</span>
                     </div>
                 </div>
-                <button type="submit" class="add-button" [disabled]="isAddingPlayer">
+                <button type="submit" class="add-button" [disabled]="addPlayerForm.invalid || isAddingPlayer">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                     </svg>
-                    <span *ngIf="!isAddingPlayer">Thêm người chơi</span>
-                    <span *ngIf="isAddingPlayer">Đang thêm...</span>
+                    <span *ngIf="!isAddingPlayer">Add Player</span>
+                    <span *ngIf="isAddingPlayer">Adding...</span>
                 </button>
             </form>
         </div>
 
         <div class="participant-legend" *ngIf="participantLegendItems.length > 0">
-            <span class="legend-title">Người tham gia phòng:</span>
+            <span class="legend-title">Participants:</span>
             <div class="legend-items">
                 <span class="legend-item" *ngFor="let item of participantLegendItems">
                     <span class="legend-swatch" [style.background-color]="item.color"></span>
@@ -55,10 +55,10 @@
             <table class="players-table">
                 <thead>
                     <tr>
-                        <th class="player-name-header">Tên người chơi</th>
+                        <th class="player-name-header">Player Name</th>
                         <th class="checkbox-header" *ngFor="let num of checkboxNumbers">{{ num }}</th>
-                        <th class="total-header">Tổng</th>
-                        <th class="payment-header">Thu tiền</th>
+                        <th class="total-header">Total</th>
+                        <th class="payment-header">Payment</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,7 +80,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                 </svg>
-                                <span>{{ player.isPaid ? 'Đã thu' : 'Chưa thu' }}</span>
+                                <span>{{ player.isPaid ? 'Paid' : 'Unpaid' }}</span>
                             </button>
                         </td>
                     </tr>
@@ -94,8 +94,8 @@
                             d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                     </svg>
                 </div>
-                <h3>Chưa có người chơi</h3>
-                <p>Thêm người chơi đầu tiên để bắt đầu theo dõi</p>
+                <h3>No players yet</h3>
+                <p>Add the first player to start tracking</p>
             </div>
         </div>
     </main>
@@ -130,7 +130,7 @@
                 <button type="button" class="cancel-button" (click)="goBack()">
                     Cancel
                 </button>
-                <button type="submit" class="submit-button">
+                <button type="submit" class="submit-button" [disabled]="passwordForm.invalid">
                     Confirm
                 </button>
             </div>

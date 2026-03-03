@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { switchMap, map, tap, catchError } from 'rxjs/operators';
 import { User, LoginRequest, LoginResponse, RegisterRequest } from '../models/user.model';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 const TOKEN_KEY = 'badminton_token';
 const USER_KEY = 'badminton_user';
@@ -15,10 +16,12 @@ const NAME_ID_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nam
 })
 export class AuthService {
     private readonly apiUrl = `${environment.API_DOMAIN}/api/auth`;
-    private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+    private readonly currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
     public currentUser$ = this.currentUserSubject.asObservable();
 
-    constructor(private http: HttpClient) {}
+    private readonly notification = inject(NzNotificationService);
+
+    constructor(private readonly http: HttpClient) {}
 
     public get currentUserValue(): User | null {
         return this.currentUserSubject.value;
@@ -49,6 +52,7 @@ export class AuthService {
                 tap(({ user }) => {
                     this.setUserToStorage(user);
                     this.currentUserSubject.next(user);
+                    this.notification.success('', 'Signed in successfully');
                 }),
                 map(({ user, token }) => ({ user, token }))
             );
@@ -77,6 +81,7 @@ export class AuthService {
                 tap(({ user }) => {
                     this.setUserToStorage(user);
                     this.currentUserSubject.next(user);
+                    this.notification.success('', 'Account registered successfully');
                 }),
                 map(({ user, token }) => ({ user, token }))
             );

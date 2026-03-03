@@ -1,30 +1,31 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import {
     Player,
     CreatePlayerRequest,
     UpdatePlayerCheckboxRequest,
-    UpdatePlayerPaymentRequest
+    UpdatePlayerPaymentRequest,
+    CheckboxUpdatedPayload
 } from '../models/player.model';
-import { CheckboxUpdatedPayload } from '../models/player.model';
 import { SignalrService } from './signalr.service';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Injectable({
     providedIn: 'root'
 })
 export class PlayerService {
     private readonly apiBase = `${environment.API_DOMAIN}/api/courts`;
-    private playersSubject = new BehaviorSubject<Player[]>([]);
+    private readonly playersSubject = new BehaviorSubject<Player[]>([]);
     public players$ = this.playersSubject.asObservable();
 
-    /** Emits when a checkbox is updated (from API or SignalR), including updatedBy for coloring */
+    private readonly notification = inject(NzNotificationService);
 
     constructor(
-        private http: HttpClient,
-        private signalrService: SignalrService
+        private readonly http: HttpClient,
+        private readonly signalrService: SignalrService
     ) {
         this.subscribeToSignalR();
     }
@@ -115,6 +116,7 @@ export class PlayerService {
         const current = this.playersSubject.value;
         this.playersSubject.next([...current, player]);
         await this.signalrService.sendPlayerAdded(player);
+        this.notification.success('', 'Player added successfully');
         return player;
     }
 
@@ -160,6 +162,7 @@ export class PlayerService {
             throw err;
         });
         await this.signalrService.sendPaymentUpdate(courtId, request);
+        this.notification.success('', 'Payment updated successfully');
     }
 
     private updatePaymentLocally(request: UpdatePlayerPaymentRequest): void {

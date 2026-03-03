@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Court, CreateCourtRequest } from '../models/court.model';
 import { SignalrService } from './signalr.service';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Injectable({
     providedIn: 'root'
@@ -13,6 +14,8 @@ export class CourtService {
     private readonly apiUrl = `${environment.API_DOMAIN}/api/courts`;
     private courtsSubject = new BehaviorSubject<Court[]>([]);
     public courts$ = this.courtsSubject.asObservable();
+
+    private readonly notification = inject(NzNotificationService);
 
     constructor(
         private http: HttpClient,
@@ -97,6 +100,7 @@ export class CourtService {
         const current = this.courtsSubject.value;
         this.courtsSubject.next([...current, court]);
         await this.signalrService.sendCourtAdded(court);
+        this.notification.success('', 'Court created successfully');
         return court;
     }
 
@@ -119,5 +123,6 @@ export class CourtService {
         }
         const current = this.courtsSubject.value.filter((c: Court) => c.id !== id);
         this.courtsSubject.next(current);
+        this.notification.success('', 'Court deleted successfully');
     }
 }

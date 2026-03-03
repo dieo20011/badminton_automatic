@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="overlay-layer">
       <div class="loader">
-        <img src="/asset/img/logo.png" class="logo-image" />
       </div>
     </div>
   `,
