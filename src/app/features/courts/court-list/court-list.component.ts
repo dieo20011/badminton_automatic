@@ -22,15 +22,15 @@ export class CourtListComponent implements OnInit, OnDestroy {
     showAddDialog = false;
     currentUser$;
     readonly leafIndices = Array.from({ length: 18 }, (_, i) => i);
-    private destroy$ = new Subject<void>();
+    private readonly destroy$ = new Subject<void>();
 
     constructor(
-        private courtService: CourtService,
-        private authService: AuthService,
-        private signalrService: SignalrService,
-        private router: Router,
-        private modal: NzModalService,
-        private notification: NzNotificationService
+        private readonly courtService: CourtService,
+        private readonly authService: AuthService,
+        private readonly signalrService: SignalrService,
+        private readonly router: Router,
+        private readonly modal: NzModalService,
+        private readonly notification: NzNotificationService
     ) {
         this.currentUser$ = this.authService.currentUser$;
     }

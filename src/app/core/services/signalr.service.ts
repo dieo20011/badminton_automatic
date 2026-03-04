@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
-import { Player, UpdatePlayerCheckboxRequest, UpdatePlayerPaymentRequest } from '../models/player.model';
-import { CheckboxUpdatedPayload } from '../models/player.model';
+import { Player, UpdatePlayerCheckboxRequest, UpdatePlayerPaymentRequest, CheckboxUpdatedPayload } from '../models/player.model';
 import { Court } from '../models/court.model';
 import { environment } from '../../../environment/environment';
 

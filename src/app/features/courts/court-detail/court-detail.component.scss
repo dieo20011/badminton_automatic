@@ -511,16 +511,17 @@
           border-color: #667eea;
           box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
+
+        &.error {
+          border-color: #f56565;
+          box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+        }
       }
 
       .error-message {
         margin-top: 0.5rem;
         font-size: 0.875rem;
         color: #f56565;
-        text-align: center;
-        background: #fff5f5;
-        padding: 0.75rem;
-        border-radius: 8px;
       }
     }
 

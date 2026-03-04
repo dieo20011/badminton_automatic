@@ -13,20 +13,11 @@ import {
     Player,
     CreatePlayerRequest,
     UpdatePlayerCheckboxRequest,
-    UpdatePlayerPaymentRequest
+    UpdatePlayerPaymentRequest,
+    CheckboxUpdatedPayload
 } from '../../../core/models/player.model';
-import { CheckboxUpdatedPayload } from '../../../core/models/player.model';
-
-const CHECKBOX_COLORS = [
-    '#e3f2fd', // light blue
-    '#fce4ec', // light pink
-    '#f3e5f5', // light purple
-    '#e8f5e9', // light green
-    '#fff3e0', // light orange
-    '#eceff1', // light grey
-    '#fbe9e7', // light deep orange
-    '#e0f7fa', // light cyan
-];
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { CHECKBOX_COLORS } from './court-detail.const';
 
 @Component({
     selector: 'app-court-detail',
@@ -46,19 +37,20 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     checkboxNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
     /** Who last updated each cell (playerId-index -> updatedBy) for coloring */
     checkboxUpdatedByMap = new Map<string, string>();
-    private destroy$ = new Subject<void>();
+    private readonly destroy$ = new Subject<void>();
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private fb: FormBuilder,
-        private courtService: CourtService,
-        private playerService: PlayerService,
-        private signalrService: SignalrService,
-        private modal: NzModalService
+        private readonly route: ActivatedRoute,
+        private readonly router: Router,
+        private readonly fb: FormBuilder,
+        private readonly courtService: CourtService,
+        private readonly playerService: PlayerService,
+        private readonly signalrService: SignalrService,
+        private readonly modal: NzModalService,
+        private readonly notification: NzNotificationService
     ) {
         this.passwordForm = this.fb.group({
-            password: ['', Validators.required],
+            password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]],
             displayName: ['', [Validators.maxLength(50)]]
         });
         this.addPlayerForm = this.fb.group({
@@ -98,6 +90,7 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     }
 
     async verifyPassword(): Promise<void> {
+        this.markFormGroupTouched(this.passwordForm);
         if (this.passwordForm.invalid || !this.court) return;
         const password = this.passwordForm.value.password as string;
         const displayName = (this.passwordForm.value.displayName as string)?.trim() || undefined;
@@ -109,6 +102,7 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         this.passwordError = '';
         this.showPasswordDialog = false;
         await this.signalrService.joinCourt(this.court.id, password, displayName);
+        this.notification.success('', 'Joined court successfully');
         this.loadPlayers();
     }
 

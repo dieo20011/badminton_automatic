@@ -117,20 +117,36 @@
 
         <form [formGroup]="passwordForm" (ngSubmit)="verifyPassword()" class="password-form">
             <div class="form-group">
-                <input type="password" formControlName="password" placeholder="Password" autofocus />
-                <div class="error-message" *ngIf="passwordError">
-                    {{ passwordError }}
+                <input
+                    type="password"
+                    formControlName="password"
+                    placeholder="Password"
+                    autofocus
+                    [class.error]="passwordForm.controls['password'].invalid && passwordForm.controls['password'].touched"
+                />
+                <div class="error-message" *ngIf="passwordForm.controls['password'].invalid && passwordForm.controls['password'].touched">
+                    <span *ngIf="passwordForm.controls['password'].errors?.['required'] || passwordForm.controls['password'].errors?.['whitespace']">Password is required</span>
+                    <span *ngIf="passwordForm.controls['password'].errors?.['minlength']">Password must be at least 4 characters</span>
                 </div>
+                <div class="error-message" *ngIf="passwordError">{{ passwordError }}</div>
             </div>
             <div class="form-group">
-                <input type="text" formControlName="displayName" placeholder="Your name (optional, for set color)" />
+                <input
+                    type="text"
+                    formControlName="displayName"
+                    placeholder="Your name (optional)"
+                    [class.error]="passwordForm.controls['displayName'].invalid && passwordForm.controls['displayName'].touched"
+                />
+                <div class="error-message" *ngIf="passwordForm.controls['displayName'].invalid && passwordForm.controls['displayName'].touched">
+                    <span *ngIf="passwordForm.controls['displayName'].errors?.['maxlength']">Display name must be less than 50 characters</span>
+                </div>
             </div>
 
             <div class="dialog-actions">
                 <button type="button" class="cancel-button" (click)="goBack()">
                     Cancel
                 </button>
-                <button type="submit" class="submit-button" [disabled]="passwordForm.invalid">
+                <button type="submit" class="submit-button" [disabled]="passwordForm.get('password')?.invalid">
                     Confirm
                 </button>
             </div>
