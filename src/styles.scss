@@ -5,60 +5,183 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ============================================================
+   CSS DESIGN TOKENS — Light Mode (default)
+   ============================================================ */
+:root {
+    /* Backgrounds */
+    --color-bg-page: linear-gradient(160deg, #e8f5e9 0%, #c8e6c9 28%, #a5d6a7 50%, #b3e5fc 75%, #e1f5fe 100%);
+    --color-bg-auth: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --color-surface: #ffffff;
+    --color-surface-hover: #f7fafc;
+    --color-surface-muted: #edf2f7;
+    --color-header-bg: rgba(255, 255, 255, 0.92);
+    --color-auth-card-bg: rgba(255, 255, 255, 0.95);
+
+    /* Text */
+    --color-text-primary: #1a202c;
+    --color-text-secondary: #718096;
+    --color-text-muted: #a0aec0;
+    --color-text-accent: #667eea;
+
+    /* Borders */
+    --color-border: #e2e8f0;
+    --color-border-hover: #cbd5e0;
+
+    /* Inputs */
+    --color-input-bg: #ffffff;
+    --color-input-text: #2d3748;
+    --color-input-placeholder: #a0aec0;
+
+    /* Accent */
+    --color-accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    /* Semantic: paid / unpaid */
+    --color-paid-bg: #c6f6d5;
+    --color-paid-border: #48bb78;
+    --color-paid-text: #22543d;
+    --color-unpaid-bg: #f7fafc;
+    --color-unpaid-border: #e2e8f0;
+    --color-unpaid-text: #718096;
+
+    /* Semantic: danger */
+    --color-danger-bg: #fee2e2;
+    --color-danger-border: #fecaca;
+    --color-danger: #dc2626;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+    /* Overlay */
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+
+    /* Leaf animation */
+    --leaf-color-start: rgba(129, 199, 132, 0.8);
+    --leaf-color-end: rgba(56, 142, 60, 0.75);
+    --leaf-shadow: rgba(76, 175, 80, 0.25);
 }
 
-html, body {
-  height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ============================================================
+   CSS DESIGN TOKENS — Dark Mode
+   ============================================================ */
+[data-theme="dark"] {
+    /* Backgrounds */
+    --color-bg-page: linear-gradient(160deg, #0d1117 0%, #111827 40%, #0f172a 70%, #0d1b2a 100%);
+    --color-surface: #1e2433;
+    --color-surface-hover: #252c3d;
+    --color-surface-muted: #161c2d;
+    --color-header-bg: rgba(18, 22, 35, 0.96);
+    --color-auth-card-bg: rgba(20, 25, 42, 0.97);
+
+    /* Text */
+    --color-text-primary: #e2e8f0;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+    --color-text-accent: #818cf8;
+
+    /* Borders */
+    --color-border: #2d3748;
+    --color-border-hover: #4a5568;
+
+    /* Inputs */
+    --color-input-bg: #252c3d;
+    --color-input-text: #e2e8f0;
+    --color-input-placeholder: #64748b;
+
+    /* Semantic: paid / unpaid */
+    --color-paid-bg: #064e3b;
+    --color-paid-border: #059669;
+    --color-paid-text: #a7f3d0;
+    --color-unpaid-bg: #1e2433;
+    --color-unpaid-border: #2d3748;
+    --color-unpaid-text: #94a3b8;
+
+    /* Semantic: danger */
+    --color-danger-bg: #450a0a;
+    --color-danger-border: #7f1d1d;
+    --color-danger: #fca5a5;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.7);
+
+    /* Overlay */
+    --overlay-bg: rgba(0, 0, 0, 0.8);
+
+    /* Leaf animation */
+    --leaf-color-start: rgba(99, 139, 198, 0.45);
+    --leaf-color-end: rgba(30, 64, 120, 0.5);
+    --leaf-shadow: rgba(56, 100, 180, 0.15);
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  margin: 0;
-  background: #f5f7fa;
-  color: #2d3748;
-  line-height: 1.6;
+    margin: 0;
+    background: var(--color-bg-page);
+    background-attachment: fixed;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar Styling */
+/* ============================================================
+   Scrollbar Styling
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+    background: var(--color-surface-muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 5px;
+    background: var(--color-border-hover);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+    background: var(--color-text-muted);
 }
 
-/* Utility Classes */
+/* ============================================================
+   Utility Classes
+   ============================================================ */
 .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
 }
 
-/* Focus Styles */
+/* ============================================================
+   Focus & Selection
+   ============================================================ */
 *:focus-visible {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
+    outline: 2px solid var(--color-text-accent);
+    outline-offset: 2px;
 }
 
-/* Selection */
 ::selection {
-  background: #667eea;
-  color: white;
+    background: var(--color-text-accent);
+    color: white;
 }

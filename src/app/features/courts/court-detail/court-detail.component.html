@@ -1,5 +1,9 @@
 <div class="court-detail-container" *ngIf="!showPasswordDialog">
     <header class="page-header">
+        <div class="court-info" *ngIf="court">
+            <h1>{{ court.name }}</h1>
+            <p>Manage players and track sets</p>
+        </div>
         <div class="header-actions">
             <button class="back-button" (click)="goBack()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -7,16 +11,24 @@
                 </svg>
                 Back
             </button>
+            <button type="button" class="action-button calc-button" (click)="openPriceCalc()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                Calculate
+            </button>
+            <button type="button" class="action-button history-button" (click)="toggleHistory()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+                {{ showHistory ? 'Hide History' : 'History' }}
+            </button>
             <button type="button" class="delete-court-button" (click)="deleteCourt()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                 </svg>
                 <span>Delete Court</span>
             </button>
-        </div>
-        <div class="court-info" *ngIf="court">
-            <h1>{{ court.name }}</h1>
-            <p>Manage players and track set scores</p>
         </div>
     </header>
 
@@ -41,13 +53,39 @@
             </form>
         </div>
 
-        <div class="participant-legend" *ngIf="participantLegendItems.length > 0">
-            <span class="legend-title">Participants:</span>
-            <div class="legend-items">
-                <span class="legend-item" *ngFor="let item of participantLegendItems">
-                    <span class="legend-swatch" [style.background-color]="item.color"></span>
-                    <span class="legend-name">{{ item.displayName }}</span>
-                </span>
+        <div class="room-status-bar">
+            <div class="online-members" *ngIf="participantLegendItems.length > 0">
+                <span class="online-pulse"></span>
+                <span class="online-label">In room ({{ participantLegendItems.length }}):</span>
+                <div class="legend-items">
+                    <span class="legend-item" *ngFor="let item of participantLegendItems">
+                        <span class="legend-swatch" [style.background-color]="item.color"></span>
+                        <span class="legend-name">{{ item.displayName }}</span>
+                    </span>
+                </div>
+            </div>
+            <div class="online-members empty" *ngIf="participantLegendItems.length === 0">
+                <span class="online-pulse idle"></span>
+                <span class="online-label">No one in the room</span>
+            </div>
+        </div>
+
+        <!-- Realtime Activity Log -->
+        <div class="activity-log" *ngIf="activityLog.length > 0">
+            <div class="activity-log-header">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/>
+                </svg>
+                <span>Activity</span>
+                <span class="log-count">{{ activityLog.length }}</span>
+            </div>
+            <div class="activity-entries">
+                <div class="activity-entry" *ngFor="let entry of activityLog; trackBy: trackActivityEntry"
+                    [class]="'entry-' + entry.type">
+                    <span class="entry-time">{{ formatTime(entry.time) }}</span>
+                    <span class="entry-dot"></span>
+                    <span class="entry-message">{{ entry.message }}</span>
+                </div>
             </div>
         </div>
 
@@ -90,15 +128,258 @@
             <div class="empty-state" *ngIf="players.length === 0">
                 <div class="empty-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                     </svg>
                 </div>
                 <h3>No players yet</h3>
                 <p>Add the first player to start tracking</p>
             </div>
         </div>
+
+        <!-- History Panel -->
+        <div class="history-panel" *ngIf="showHistory">
+            <div class="history-header">
+                <h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                    </svg>
+                    Session History
+                </h3>
+            </div>
+
+            <div class="history-loading" *ngIf="isLoadingHistory">
+                <div class="spinner"></div>
+                <span>Loading history...</span>
+            </div>
+
+            <div class="history-empty" *ngIf="!isLoadingHistory && courtSessions.length === 0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+                <p>No history yet. Use "Calculate" to save the first session.</p>
+            </div>
+
+            <div class="session-list" *ngIf="!isLoadingHistory && courtSessions.length > 0">
+                <div class="session-item" *ngFor="let s of courtSessions">
+                    <div class="session-summary" (click)="toggleSessionExpand(s.id)" (keydown.enter)="toggleSessionExpand(s.id)" tabindex="0" role="button">
+                        <div class="session-summary-left">
+                            <span class="session-date">{{ formatSessionDate(s.sessionDate) }}</span>
+                            <span class="session-notes" *ngIf="s.notes">{{ s.notes }}</span>
+                        </div>
+                        <div class="session-summary-right">
+                            <span class="session-total">{{ formatCurrency(s.totalCost) }}</span>
+                            <span class="session-players-count">{{ s.players.length }} players</span>
+                            <svg class="expand-icon" [class.expanded]="expandedSessionId === s.id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="session-detail" *ngIf="expandedSessionId === s.id">
+                        <div class="session-cost-breakdown">
+                            <div class="cost-row">
+                                <span>Court Fee</span>
+                                <span>{{ formatCurrency(s.courtFee) }}</span>
+                            </div>
+                            <div class="cost-row" *ngIf="s.shuttlecockCount > 0">
+                                <span>Shuttlecocks ({{ s.shuttlecockCount }} × {{ formatCurrency(s.shuttlecockPrice) }})</span>
+                                <span>{{ formatCurrency(s.shuttlecockCount * s.shuttlecockPrice) }}</span>
+                            </div>
+                            <div class="cost-row" *ngIf="s.waterFee > 0">
+                                <span>Water</span>
+                                <span>{{ formatCurrency(s.waterFee) }}</span>
+                            </div>
+                            <div class="cost-row total-row">
+                                <span>Total</span>
+                                <span>{{ formatCurrency(s.totalCost) }}</span>
+                            </div>
+                            <div class="cost-row male-row" *ngIf="s.maleCount > 0">
+                                <span>Male ({{ s.maleCount }} players)</span>
+                                <span>{{ formatCurrency(s.malePerPerson) }}/person</span>
+                            </div>
+                            <div class="cost-row female-row" *ngIf="s.femaleCount > 0">
+                                <span>Female ({{ s.femaleCount }} players)</span>
+                                <span>{{ formatCurrency(s.femalePerPerson) }}/person</span>
+                            </div>
+                        </div>
+                        <div class="session-players-table" *ngIf="s.players.length > 0">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Sets</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let p of s.players">
+                                        <td>{{ p.name }}</td>
+                                        <td>{{ p.checkedSets }}</td>
+                                        <td>
+                                            <span class="paid-badge" [class.paid]="p.isPaid">
+                                                {{ p.isPaid ? 'Paid' : 'Unpaid' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+</div>
+
+<!-- Price Calculator Modal -->
+<div class="modal-overlay" *ngIf="showPriceCalc">
+    <div class="price-calc-modal" [formGroup]="priceCalcForm">
+        <div class="modal-header">
+            <div class="modal-title">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <h2>Session Calculator</h2>
+            </div>
+            <button type="button" class="modal-close" title="Close" (click)="closePriceCalc()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="calc-grid">
+                <!-- Left: Inputs -->
+                <div class="calc-inputs">
+                    <h4 class="section-label">Costs</h4>
+                    <div class="input-group">
+                        <label>Court Fee (VND)</label>
+                        <input type="number" formControlName="courtFee" min="0" placeholder="0" />
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Shuttlecocks</label>
+                            <input type="number" formControlName="shuttlecockCount" min="0" placeholder="0" />
+                        </div>
+                        <div class="input-group">
+                            <label>Price/piece (VND)</label>
+                            <input type="number" formControlName="shuttlecockPrice" min="0" placeholder="25000" />
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Water Fee (VND)</label>
+                        <input type="number" formControlName="waterFee" min="0" placeholder="0" />
+                    </div>
+
+                    <h4 class="section-label section-label--mt">Players</h4>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Male count</label>
+                            <input type="number" formControlName="maleCount" min="0" placeholder="0" />
+                        </div>
+                        <div class="input-group">
+                            <label>Male fee/person (VND)</label>
+                            <input type="number" formControlName="maleFixedFee" min="0" placeholder="75000" />
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Female count</label>
+                            <input type="number" formControlName="femaleCount" min="0" placeholder="0" />
+                        </div>
+                        <div class="input-group">
+                            <label>Female fee/person (VND)</label>
+                            <input type="number" formControlName="femaleFixedFee" min="0" placeholder="0 = auto-calculate" />
+                        </div>
+                    </div>
+                    <p class="calc-hint">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        Set to 0 to auto-calculate from the remainder. Default: male 75,000₫/person.
+                    </p>
+
+                    <h4 class="section-label section-label--mt">Notes</h4>
+                    <div class="input-group">
+                        <input type="text" formControlName="notes" placeholder="Session notes (optional)" />
+                    </div>
+                </div>
+
+                <!-- Right: Result -->
+                <div class="calc-result" *ngIf="calcResult">
+                    <h4 class="section-label">Results</h4>
+                    <div class="result-card">
+                        <div class="result-section">
+                            <div class="result-row">
+                                <span class="result-label">Court Fee</span>
+                                <span class="result-value">{{ formatCurrency(priceCalcForm.value.courtFee || 0) }}</span>
+                            </div>
+                            <div class="result-row" *ngIf="(priceCalcForm.value.shuttlecockCount || 0) > 0">
+                                <span class="result-label">Shuttlecock Fee</span>
+                                <span class="result-value">{{ formatCurrency(calcResult.totalShuttlecock) }}</span>
+                            </div>
+                            <div class="result-row" *ngIf="(priceCalcForm.value.waterFee || 0) > 0">
+                                <span class="result-label">Water Fee</span>
+                                <span class="result-value">{{ formatCurrency(priceCalcForm.value.waterFee || 0) }}</span>
+                            </div>
+                            <div class="result-row total">
+                                <span class="result-label">Total Cost</span>
+                                <span class="result-value highlight">{{ formatCurrency(calcResult.totalCost) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="result-divider"></div>
+
+                        <div class="result-section" *ngIf="(priceCalcForm.value.maleCount || 0) > 0">
+                            <div class="result-row gender male">
+                                <span class="result-label">
+                                    <span class="gender-icon">♂</span>
+                                    Male ({{ priceCalcForm.value.maleCount }}) per person
+                                </span>
+                                <span class="result-value male-color">{{ formatCurrency(calcResult.malePerPerson) }}</span>
+                            </div>
+                            <div class="result-row sub">
+                                <span class="result-label">Total male collected</span>
+                                <span class="result-value">{{ formatCurrency(calcResult.maleTotalPay) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="result-section" *ngIf="(priceCalcForm.value.femaleCount || 0) > 0">
+                            <div class="result-row gender female">
+                                <span class="result-label">
+                                    <span class="gender-icon">♀</span>
+                                    Female ({{ priceCalcForm.value.femaleCount }}) per person
+                                </span>
+                                <span class="result-value female-color">{{ formatCurrency(calcResult.femalePerPerson) }}</span>
+                            </div>
+                            <div class="result-row sub">
+                                <span class="result-label">Total female collected</span>
+                                <span class="result-value">{{ formatCurrency(calcResult.femaleTotalPay) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="result-divider" *ngIf="(priceCalcForm.value.maleCount || 0) + (priceCalcForm.value.femaleCount || 0) > 0"></div>
+
+                        <div class="result-row surplus" [class.positive]="calcResult.surplus >= 0" [class.negative]="calcResult.surplus < 0">
+                            <span class="result-label">{{ calcResult.surplus >= 0 ? 'Surplus' : 'Deficit' }}</span>
+                            <span class="result-value">{{ formatCurrency(calcResult.surplus >= 0 ? calcResult.surplus : -calcResult.surplus) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closePriceCalc()">Cancel</button>
+            <button type="button" class="btn-save" (click)="saveSession()" [disabled]="isSavingSession || !calcResult">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                </svg>
+                {{ isSavingSession ? 'Saving...' : 'Save Session' }}
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Password Dialog -->

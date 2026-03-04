@@ -14,10 +14,13 @@ export class SignalrService {
 
     public playerAdded$ = new Subject<Player>();
     public playerUpdated$ = new Subject<Player>();
-    /** Checkbox update including updatedBy for per-user coloring in room */
     public checkboxUpdatedPayload$ = new Subject<CheckboxUpdatedPayload>();
     public paymentUpdated$ = new Subject<UpdatePlayerPaymentRequest>();
     public courtAdded$ = new Subject<Court>();
+    /** Emits the displayName of the user who just joined the court room */
+    public userJoined$ = new Subject<string>();
+    /** Emits the displayName of the user who just left the court room */
+    public userLeft$ = new Subject<string>();
 
     constructor() {}
 
@@ -55,6 +58,12 @@ export class SignalrService {
         });
         this.hubConnection.on('CourtAdded', (court: Court) => {
             this.courtAdded$.next(court);
+        });
+        this.hubConnection.on('UserJoined', (displayName: string) => {
+            this.userJoined$.next(displayName);
+        });
+        this.hubConnection.on('UserLeft', (displayName: string) => {
+            this.userLeft$.next(displayName);
         });
     }
 

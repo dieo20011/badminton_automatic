@@ -16,8 +16,17 @@ import {
     UpdatePlayerPaymentRequest,
     CheckboxUpdatedPayload
 } from '../../../core/models/player.model';
+import { CourtSession, PriceCalcResult, SaveCourtSessionRequest } from '../../../core/models/court-session.model';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { CHECKBOX_COLORS } from './court-detail.const';
+
+export interface ActivityLogEntry {
+    id: number;
+    time: Date;
+    type: 'join' | 'leave' | 'checkbox' | 'player' | 'payment';
+    message: string;
+    actor?: string;
+}
 
 @Component({
     selector: 'app-court-detail',
@@ -35,8 +44,26 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     addPlayerForm: FormGroup;
     isAddingPlayer = false;
     checkboxNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
-    /** Who last updated each cell (playerId-index -> updatedBy) for coloring */
     checkboxUpdatedByMap = new Map<string, string>();
+
+    // Active members in room: displayName → color
+    activeMembers = new Map<string, string>();
+    // Realtime activity log (max 50 entries, newest first)
+    activityLog: ActivityLogEntry[] = [];
+    private logIdCounter = 0;
+
+    // Price calculator
+    showPriceCalc = false;
+    priceCalcForm: FormGroup;
+    calcResult: PriceCalcResult | null = null;
+    isSavingSession = false;
+
+    // History
+    showHistory = false;
+    courtSessions: CourtSession[] = [];
+    isLoadingHistory = false;
+    expandedSessionId: string | null = null;
+
     private readonly destroy$ = new Subject<void>();
 
     constructor(
@@ -56,10 +83,25 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         this.addPlayerForm = this.fb.group({
             playerName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]]
         });
+        this.priceCalcForm = this.fb.group({
+            courtFee: [0, [Validators.min(0)]],
+            shuttlecockCount: [0, [Validators.min(0)]],
+            shuttlecockPrice: [25000, [Validators.min(0)]],
+            waterFee: [0, [Validators.min(0)]],
+            maleCount: [0, [Validators.min(0)]],
+            femaleCount: [0, [Validators.min(0)]],
+            maleFixedFee: [75000, [Validators.min(0)]],
+            femaleFixedFee: [0, [Validators.min(0)]],
+            notes: [''],
+            sessionDate: [new Date()]
+        });
+        this.priceCalcForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.calculatePrice());
     }
 
     ngOnInit(): void {
         this.subscribeToCheckboxPayload();
+        this.subscribeToUserEvents();
+        this.subscribeToPlayerEvents();
         const courtId = this.route.snapshot.paramMap.get('id');
         if (!courtId) {
             this.router.navigate(['/courts']);
@@ -80,7 +122,52 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
                 if (!payload || payload.playerId === undefined) return;
                 const key = `${payload.playerId}-${payload.checkboxIndex}`;
                 if (payload.updatedBy) this.checkboxUpdatedByMap.set(key, payload.updatedBy);
+
+                const selfName = (this.passwordForm.value.displayName as string)?.trim() || 'You';
+                const isSelf = payload.updatedBy === selfName;
+                if (isSelf) return;
+
+                const actor = payload.updatedBy ?? 'Someone';
+                const player = this.players.find((p) => p.id === payload.playerId);
+                const playerName = player?.name ?? 'player';
+                const action = payload.isChecked ? 'checked' : 'unchecked';
+                this.addLog({
+                    type: 'checkbox',
+                    actor,
+                    message: `${actor} ${action} set ${payload.checkboxIndex + 1} for ${playerName}`
+                });
             });
+    }
+
+    private subscribeToUserEvents(): void {
+        this.signalrService.userJoined$.pipe(takeUntil(this.destroy$)).subscribe((name: string) => {
+            this.activeMembers.set(name, this.getColorForUser(name));
+            this.addLog({ type: 'join', actor: name, message: `${name} joined the room` });
+        });
+        this.signalrService.userLeft$.pipe(takeUntil(this.destroy$)).subscribe((name: string) => {
+            this.activeMembers.delete(name);
+            this.addLog({ type: 'leave', actor: name, message: `${name} left the room` });
+        });
+    }
+
+    private subscribeToPlayerEvents(): void {
+        this.signalrService.playerAdded$.pipe(takeUntil(this.destroy$)).subscribe((player: Player) => {
+            this.addLog({ type: 'player', message: `Player added: ${player.name}` });
+        });
+        this.signalrService.paymentUpdated$.pipe(takeUntil(this.destroy$)).subscribe((req: UpdatePlayerPaymentRequest) => {
+            const player = this.players.find((p) => p.id === req.playerId);
+            const name = player?.name ?? 'player';
+            this.addLog({ type: 'payment', message: `${name}: ${req.isPaid ? 'payment collected' : 'payment pending'}` });
+        });
+    }
+
+    private addLog(entry: Omit<ActivityLogEntry, 'id' | 'time'>): void {
+        const log: ActivityLogEntry = { ...entry, id: ++this.logIdCounter, time: new Date() };
+        this.activityLog = [log, ...this.activityLog].slice(0, 50);
+    }
+
+    trackActivityEntry(_: number, entry: ActivityLogEntry): number {
+        return entry.id;
     }
 
     ngOnDestroy(): void {
@@ -102,7 +189,10 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         this.passwordError = '';
         this.showPasswordDialog = false;
         await this.signalrService.joinCourt(this.court.id, password, displayName);
-        this.notification.success('', 'Joined court successfully');
+        const selfName = displayName ?? 'You';
+        this.activeMembers.set(selfName, this.getColorForUser(selfName));
+        this.addLog({ type: 'join', actor: selfName, message: `${selfName} joined the room` });
+        this.notification.success('', 'Successfully joined the room');
         this.loadPlayers();
     }
 
@@ -137,12 +227,20 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
 
     async toggleCheckbox(player: Player, index: number): Promise<void> {
         if (!this.court) return;
+        const isChecked = !player.checkboxes[index];
         const request: UpdatePlayerCheckboxRequest = {
             playerId: player.id,
             checkboxIndex: index,
-            isChecked: !player.checkboxes[index]
+            isChecked
         };
         const displayName = (this.passwordForm.value.displayName as string)?.trim() || undefined;
+        const actor = displayName ?? 'You';
+        const action = isChecked ? 'checked' : 'unchecked';
+        this.addLog({
+            type: 'checkbox',
+            actor,
+            message: `${actor} ${action} set ${index + 1} for ${player.name}`
+        });
         try {
             await this.playerService.updateCheckbox(this.court.id, request, displayName);
         } catch (e) {
@@ -185,17 +283,151 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         return CHECKBOX_COLORS[Math.abs(n) % CHECKBOX_COLORS.length];
     }
 
-    /** Unique participants who have ticked at least one checkbox (for color legend). */
+    /** People currently in the room (joined via SignalR). */
     get participantLegendItems(): Array<{ displayName: string; color: string }> {
-        const seen = new Set<string>();
-        const items: Array<{ displayName: string; color: string }> = [];
-        this.checkboxUpdatedByMap.forEach((displayName) => {
-            if (displayName && !seen.has(displayName)) {
-                seen.add(displayName);
-                items.push({ displayName, color: this.getColorForUser(displayName) });
-            }
-        });
-        return items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        return Array.from(this.activeMembers.entries())
+            .map(([displayName, color]) => ({ displayName, color }))
+            .sort((a, b) => a.displayName.localeCompare(b.displayName));
+    }
+
+    // ---- Price Calculator ----
+    openPriceCalc(): void {
+        const maleCount = this.players.length;
+        this.priceCalcForm.patchValue({ maleCount, femaleCount: 0, sessionDate: new Date() });
+        this.calculatePrice();
+        this.showPriceCalc = true;
+    }
+
+    closePriceCalc(): void {
+        this.showPriceCalc = false;
+        this.calcResult = null;
+    }
+
+    calculatePrice(): void {
+        const v = this.priceCalcForm.value as {
+            courtFee: number; shuttlecockCount: number; shuttlecockPrice: number;
+            waterFee: number; maleCount: number; femaleCount: number;
+            maleFixedFee: number; femaleFixedFee: number;
+        };
+        const courtFee = Number(v.courtFee) || 0;
+        const shuttlecockTotal = (Number(v.shuttlecockCount) || 0) * (Number(v.shuttlecockPrice) || 0);
+        const waterFee = Number(v.waterFee) || 0;
+        const totalCost = courtFee + shuttlecockTotal + waterFee;
+        const maleCount = Number(v.maleCount) || 0;
+        const femaleCount = Number(v.femaleCount) || 0;
+        const totalPeople = maleCount + femaleCount;
+        const maleFixedFee = Number(v.maleFixedFee) || 0;
+        const femaleFixedFee = Number(v.femaleFixedFee) || 0;
+
+        let malePerPerson = 0;
+        let femalePerPerson = 0;
+
+        if (maleFixedFee > 0 && femaleFixedFee > 0) {
+            malePerPerson = maleFixedFee;
+            femalePerPerson = femaleFixedFee;
+        } else if (maleFixedFee > 0 && femaleFixedFee === 0) {
+            malePerPerson = maleFixedFee;
+            const malePays = maleCount * maleFixedFee;
+            const remainder = totalCost - malePays;
+            femalePerPerson = femaleCount > 0 ? Math.ceil(remainder / femaleCount) : 0;
+        } else if (femaleFixedFee > 0 && maleFixedFee === 0) {
+            femalePerPerson = femaleFixedFee;
+            const femalePays = femaleCount * femaleFixedFee;
+            const remainder = totalCost - femalePays;
+            malePerPerson = maleCount > 0 ? Math.ceil(remainder / maleCount) : 0;
+        } else {
+            const perPerson = totalPeople > 0 ? Math.ceil(totalCost / totalPeople) : 0;
+            malePerPerson = perPerson;
+            femalePerPerson = perPerson;
+        }
+
+        const maleTotalPay = maleCount * malePerPerson;
+        const femaleTotalPay = femaleCount * femalePerPerson;
+        const surplus = maleTotalPay + femaleTotalPay - totalCost;
+
+        this.calcResult = {
+            totalShuttlecock: shuttlecockTotal,
+            totalCost,
+            malePerPerson,
+            femalePerPerson,
+            maleTotalPay,
+            femaleTotalPay,
+            surplus
+        };
+    }
+
+    async saveSession(): Promise<void> {
+        if (!this.court || !this.calcResult) return;
+        this.isSavingSession = true;
+        const v = this.priceCalcForm.value;
+        const request: SaveCourtSessionRequest = {
+            sessionDate: v.sessionDate ?? new Date(),
+            notes: v.notes?.trim() ?? '',
+            courtFee: Number(v.courtFee) || 0,
+            shuttlecockCount: Number(v.shuttlecockCount) || 0,
+            shuttlecockPrice: Number(v.shuttlecockPrice) || 0,
+            waterFee: Number(v.waterFee) || 0,
+            maleCount: Number(v.maleCount) || 0,
+            femaleCount: Number(v.femaleCount) || 0,
+            maleFixedFee: Number(v.maleFixedFee) || 0,
+            femaleFixedFee: Number(v.femaleFixedFee) || 0,
+            malePerPerson: this.calcResult.malePerPerson,
+            femalePerPerson: this.calcResult.femalePerPerson,
+            totalCost: this.calcResult.totalCost,
+            players: this.players.map((p) => ({
+                playerId: p.id,
+                name: p.name,
+                checkedSets: this.getCheckedCount(p),
+                isPaid: p.isPaid
+            }))
+        };
+        try {
+            const saved = await this.courtService.saveCourtSession(this.court.id, request);
+            this.courtSessions = [saved, ...this.courtSessions];
+            this.notification.success('', 'Session saved successfully');
+            this.closePriceCalc();
+        } catch (err) {
+            console.error('Save session failed', err);
+            this.notification.error('', err instanceof Error ? err.message : 'Failed to save session');
+        } finally {
+            this.isSavingSession = false;
+        }
+    }
+
+    // ---- History ----
+    async toggleHistory(): Promise<void> {
+        this.showHistory = !this.showHistory;
+        if (this.showHistory && this.courtSessions.length === 0 && this.court) {
+            await this.loadHistory();
+        }
+    }
+
+    private async loadHistory(): Promise<void> {
+        if (!this.court) return;
+        this.isLoadingHistory = true;
+        try {
+            this.courtSessions = await this.courtService.getCourtSessions(this.court.id);
+        } catch (err) {
+            console.error('Load history failed', err);
+        } finally {
+            this.isLoadingHistory = false;
+        }
+    }
+
+    toggleSessionExpand(sessionId: string): void {
+        this.expandedSessionId = this.expandedSessionId === sessionId ? null : sessionId;
+    }
+
+    formatTime(date: Date): string {
+        return new Date(date).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    formatCurrency(amount: number): string {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+
+    formatSessionDate(date: Date): string {
+        return new Date(date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
     goBack(): void {

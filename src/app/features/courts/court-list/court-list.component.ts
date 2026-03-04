@@ -6,14 +6,16 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { CourtService } from '../../../core/services/court.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SignalrService } from '../../../core/services/signalr.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { Court } from '../../../core/models/court.model';
 import { AddCourtDialogComponent } from '../add-court-dialog/add-court-dialog.component';
+import { ClockComponent } from '../../../shared/clock/clock.component';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
     selector: 'app-court-list',
     standalone: true,
-    imports: [CommonModule, NzModalModule, AddCourtDialogComponent],
+    imports: [CommonModule, NzModalModule, AddCourtDialogComponent, ClockComponent],
     templateUrl: './court-list.component.html',
     styleUrls: ['./court-list.component.scss']
 })
@@ -28,6 +30,7 @@ export class CourtListComponent implements OnInit, OnDestroy {
         private readonly courtService: CourtService,
         private readonly authService: AuthService,
         private readonly signalrService: SignalrService,
+        readonly themeService: ThemeService,
         private readonly router: Router,
         private readonly modal: NzModalService,
         private readonly notification: NzNotificationService
@@ -65,10 +68,18 @@ export class CourtListComponent implements OnInit, OnDestroy {
         this.router.navigate(['/courts', court.id]);
     }
 
+    toggleTheme(): void {
+        this.themeService.toggle();
+    }
+
     logout(): void {
         this.authService.logout();
         this.notification.success('success', 'Logout successfully');
         this.router.navigate(['/login']);
+    }
+
+    trackById(_index: number, court: Court): string {
+        return court.id;
     }
 
     formatDate(date: Date): string {

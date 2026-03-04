@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Court, CreateCourtRequest } from '../models/court.model';
+import { CourtSession, SaveCourtSessionRequest } from '../models/court-session.model';
 import { SignalrService } from './signalr.service';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
@@ -111,6 +112,25 @@ export class CourtService {
                 { password }
             )
         ).then((res) => res?.status === true && res?.data?.verified === true).catch(() => false);
+    }
+
+    public async getCourtSessions(courtId: string): Promise<CourtSession[]> {
+        const res = await firstValueFrom(
+            this.http.get<ApiSuccessResponse<CourtSession[]>>(`${this.apiUrl}/${courtId}/sessions`)
+        );
+        if (!res?.status || !Array.isArray(res.data)) return [];
+        return res.data.map((s) => ({ ...s, sessionDate: new Date(s.sessionDate), createdDate: new Date(s.createdDate) }));
+    }
+
+    public async saveCourtSession(courtId: string, request: SaveCourtSessionRequest): Promise<CourtSession> {
+        const res = await firstValueFrom(
+            this.http.post<ApiSuccessResponse<CourtSession>>(`${this.apiUrl}/${courtId}/sessions`, request)
+        );
+        if (!res?.status || !res.data) {
+            const msg = (res as { errorMessage?: string })?.errorMessage ?? 'Save session failed';
+            throw new Error(msg);
+        }
+        return { ...res.data, sessionDate: new Date(res.data.sessionDate), createdDate: new Date(res.data.createdDate) };
     }
 
     public async deleteCourt(id: string): Promise<void> {

@@ -134,6 +134,7 @@ export class PlayerService {
             console.error('Update checkbox failed', err);
             throw err;
         });
+        this.updateCheckboxLocally(request);
         await this.signalrService.sendCheckboxUpdate(courtId, request, displayName);
     }
 
@@ -161,6 +162,7 @@ export class PlayerService {
             console.error('Update payment failed', err);
             throw err;
         });
+        this.updatePaymentLocally(request);
         await this.signalrService.sendPaymentUpdate(courtId, request);
         this.notification.success('', 'Payment updated successfully');
     }
