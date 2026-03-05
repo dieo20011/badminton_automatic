@@ -187,13 +187,18 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
             return;
         }
         this.passwordError = '';
-        this.showPasswordDialog = false;
-        await this.signalrService.joinCourt(this.court.id, password, displayName);
-        const selfName = displayName ?? 'You';
-        this.activeMembers.set(selfName, this.getColorForUser(selfName));
-        this.addLog({ type: 'join', actor: selfName, message: `${selfName} joined the room` });
-        this.notification.success('', 'Successfully joined the room');
-        this.loadPlayers();
+        try {
+            await this.signalrService.joinCourt(this.court.id, password, displayName);
+            this.showPasswordDialog = false;
+            const selfName = displayName ?? 'You';
+            this.activeMembers.set(selfName, this.getColorForUser(selfName));
+            this.addLog({ type: 'join', actor: selfName, message: `${selfName} joined the room` });
+            this.notification.success('', 'Successfully joined the room');
+            this.loadPlayers();
+        } catch (e: any) {
+            this.passwordError = e.message || 'Failed to join court.';
+            console.error('Join court failed', e);
+        }
     }
 
     private loadPlayers(): void {
@@ -466,5 +471,24 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
 
     get playerName() {
         return this.addPlayerForm.get('playerName');
+    }
+
+    deletePlayer(player: Player): void {
+        if (!this.court) return;
+        this.modal.confirm({
+            nzTitle: 'Delete Player',
+            nzContent: `Are you sure you want to delete "${player.name}"?`,
+            nzOkText: 'Delete',
+            nzCancelText: 'Cancel',
+            nzOkDanger: true,
+            nzOnOk: async () => {
+                try {
+                    await this.playerService.deletePlayer(this.court!.id, player.id);
+                } catch (e) {
+                    console.error('Delete player failed', e);
+                    this.notification.error('', e instanceof Error ? e.message : 'Failed to delete player');
+                }
+            }
+        });
     }
 }

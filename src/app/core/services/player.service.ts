@@ -45,6 +45,11 @@ export class PlayerService {
         this.signalrService.paymentUpdated$.subscribe((data: UpdatePlayerPaymentRequest) => {
             this.updatePaymentLocally(data);
         });
+
+        this.signalrService.playerDeleted$.subscribe((playerId: string) => {
+            const current = this.playersSubject.value;
+            this.playersSubject.next(current.filter((p: Player) => p.id !== playerId));
+        });
     }
 
     private mapPlayerFromApi(raw: {
@@ -118,6 +123,19 @@ export class PlayerService {
         await this.signalrService.sendPlayerAdded(player);
         this.notification.success('', 'Player added successfully');
         return player;
+    }
+
+    public async deletePlayer(courtId: string, playerId: string): Promise<void> {
+        await firstValueFrom(
+            this.http.delete<ApiSuccessResponse<unknown>>(`${this.apiBase}/${courtId}/players/${playerId}`)
+        ).catch((err) => {
+            console.error('Delete player failed', err);
+            throw err;
+        });
+        const current = this.playersSubject.value;
+        this.playersSubject.next(current.filter((p: Player) => p.id !== playerId));
+        await this.signalrService.sendPlayerDeleted(courtId, playerId);
+        this.notification.success('', 'Player deleted successfully');
     }
 
     public async updateCheckbox(

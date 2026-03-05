@@ -14,6 +14,7 @@ export class SignalrService {
 
     public playerAdded$ = new Subject<Player>();
     public playerUpdated$ = new Subject<Player>();
+    public playerDeleted$ = new Subject<string>();
     public checkboxUpdatedPayload$ = new Subject<CheckboxUpdatedPayload>();
     public paymentUpdated$ = new Subject<UpdatePlayerPaymentRequest>();
     public courtAdded$ = new Subject<Court>();
@@ -49,6 +50,9 @@ export class SignalrService {
         });
         this.hubConnection.on('PlayerUpdated', (player: Player) => {
             this.playerUpdated$.next(player);
+        });
+        this.hubConnection.on('PlayerDeleted', (playerId: string) => {
+            this.playerDeleted$.next(playerId);
         });
         this.hubConnection.on('CheckboxUpdated', (data: CheckboxUpdatedPayload) => {
             this.checkboxUpdatedPayload$.next(data);
@@ -86,6 +90,12 @@ export class SignalrService {
     public async sendPlayerAdded(player: Player): Promise<void> {
         if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
             await this.hubConnection.invoke('BroadcastPlayerAdded', player.courtId, player);
+        }
+    }
+
+    public async sendPlayerDeleted(courtId: string, playerId: string): Promise<void> {
+        if (this.hubConnection?.state === signalR.HubConnectionState.Connected) {
+            await this.hubConnection.invoke('BroadcastPlayerDeleted', courtId, playerId);
         }
     }
 
