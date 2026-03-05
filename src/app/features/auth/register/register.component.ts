@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/user.model';
 import { noWhitespaceValidator } from '../../../core/validators/form.validators';
+import { emailRegex } from '../../../../shared/validator/email-regex.const';
 
 @Component({
     selector: 'app-register',
@@ -17,6 +18,7 @@ export class RegisterComponent {
     registerForm: FormGroup;
     isLoading = false;
     errorMessage = '';
+    errorEmailMessage = 'Invalid email. Email must like: "example@gmail.com"';
 
     constructor(
         private fb: FormBuilder,
@@ -26,7 +28,7 @@ export class RegisterComponent {
         this.registerForm = this.fb.group({
             fullName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]],
             userName: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
-            email: ['', [Validators.required, Validators.email, noWhitespaceValidator]],
+            email: ['', [Validators.required, Validators.email, noWhitespaceValidator, Validators.pattern(emailRegex)]],
             password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]]
         });
     }

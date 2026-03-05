@@ -51,6 +51,7 @@
         <div class="error-message" *ngIf="email?.invalid && email?.touched">
           <span *ngIf="email?.errors?.['required'] || email?.errors?.['whitespace']">Email is required</span>
           <span *ngIf="email?.errors?.['email']">Invalid email</span>
+          <span *ngIf="email?.errors?.['pattern']">{{ errorEmailMessage }}</span>
         </div>
       </div>
 

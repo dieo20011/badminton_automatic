@@ -78,7 +78,7 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     ) {
         this.passwordForm = this.fb.group({
             password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]],
-            displayName: ['', [Validators.maxLength(50)]]
+            displayName: ['', [Validators.required, Validators.maxLength(50)]]
         });
         this.addPlayerForm = this.fb.group({
             playerName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]]
