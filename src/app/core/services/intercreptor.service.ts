@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { GlobalSpinnerStore } from '../../../shared/global-sniper/global-sniper.store';
+import { GlobalSpinnerStore } from '../../shared/global-sniper/global-sniper.store';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {

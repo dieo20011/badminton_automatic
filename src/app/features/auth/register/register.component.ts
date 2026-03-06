@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/user.model';
 import { noWhitespaceValidator } from '../../../core/validators/form.validators';
-import { emailRegex } from '../../../../shared/validator/email-regex.const';
+import { emailRegex } from '../../../shared/validator/email-regex.const';
 
 @Component({
     selector: 'app-register',

@@ -1,3 +1,5 @@
+@use "sass:string";
+
 .court-list-container {
     min-height: 100vh;
     position: relative;
@@ -32,9 +34,9 @@
         $delaySec: 0 - $i * 1.4;
 
         &:nth-child(#{$i + 1}) {
-            left: unquote(#{$left} + "%");
-            animation-duration: unquote(#{$duration} + "s");
-            animation-delay: unquote(#{$delaySec} + "s");
+            left: string.unquote(#{$left} + "%");
+            animation-duration: string.unquote(#{$duration} + "s");
+            animation-delay: string.unquote(#{$delaySec} + "s");
             opacity: 0.6;
         }
     }

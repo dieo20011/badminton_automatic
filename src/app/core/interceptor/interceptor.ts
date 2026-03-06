@@ -11,7 +11,7 @@ import {
 import { Observable, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { GlobalSpinnerStore } from '../../../shared/global-sniper/global-sniper.store';
+import { GlobalSpinnerStore } from '../../shared/global-sniper/global-sniper.store';
 import { environment } from '../../../environment/environment';
 import { ApiResponse } from '../models/api-response.model';
 

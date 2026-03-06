@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { GlobalSniperComponent } from '../shared/global-sniper/global-sniper.component';
+import { GlobalSniperComponent } from './shared/global-sniper/global-sniper.component';
 import { ThemeService } from './core/services/theme.service';
 
 @Component({
