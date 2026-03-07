@@ -11,11 +11,13 @@ import { Court } from '../../../core/models/court.model';
 import { AddCourtDialogComponent } from '../add-court-dialog/add-court-dialog.component';
 import { ClockComponent } from '../../../shared/clock/clock.component';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
     selector: 'app-court-list',
     standalone: true,
-    imports: [CommonModule, NzModalModule, AddCourtDialogComponent, ClockComponent],
+    imports: [CommonModule, NzModalModule, AddCourtDialogComponent, ClockComponent, TranslateModule],
     templateUrl: './court-list.component.html',
     styleUrls: ['./court-list.component.scss']
 })
@@ -33,7 +35,9 @@ export class CourtListComponent implements OnInit, OnDestroy {
         readonly themeService: ThemeService,
         private readonly router: Router,
         private readonly modal: NzModalService,
-        private readonly notification: NzNotificationService
+        private readonly notification: NzNotificationService,
+        private readonly translate: TranslateService,
+        private readonly languageService: LanguageService
     ) {
         this.currentUser$ = this.authService.currentUser$;
     }
@@ -74,7 +78,7 @@ export class CourtListComponent implements OnInit, OnDestroy {
 
     logout(): void {
         this.authService.logout();
-        this.notification.success('success', 'Logout successfully');
+        this.notification.success('success', this.translate.instant('courts.logoutSuccess'));
         this.router.navigate(['/login']);
     }
 
@@ -83,7 +87,7 @@ export class CourtListComponent implements OnInit, OnDestroy {
     }
 
     formatDate(date: Date): string {
-        return new Date(date).toLocaleDateString('vi-VN', {
+        return new Date(date).toLocaleDateString(this.languageService.getCurrentLocaleCode(), {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
@@ -93,17 +97,17 @@ export class CourtListComponent implements OnInit, OnDestroy {
     deleteCourt(event: Event, court: Court): void {
         event.stopPropagation();
         this.modal.confirm({
-            nzTitle: 'Xóa sân',
-            nzContent: `Bạn có chắc muốn xóa sân "${court.name}"? Tất cả người chơi thuộc sân này cũng sẽ bị xóa.`,
-            nzOkText: 'Xóa',
-            nzCancelText: 'Hủy',
+            nzTitle: this.translate.instant('courts.deleteCourtTitle'),
+            nzContent: this.translate.instant('courts.deleteCourtContent', { name: court.name }),
+            nzOkText: this.translate.instant('common.delete'),
+            nzCancelText: this.translate.instant('common.cancel'),
             nzOkDanger: true,
             nzOnOk: () =>
                 this.courtService.deleteCourt(court.id).catch((err) => {
                     console.error('Delete court failed', err);
                     this.modal.error({
-                        nzTitle: 'Không thể xóa sân',
-                        nzContent: err instanceof Error ? err.message : 'Đã xảy ra lỗi. Vui lòng thử lại.'
+                        nzTitle: this.translate.instant('courts.deleteCourtFailedTitle'),
+                        nzContent: err instanceof Error ? err.message : this.translate.instant('courts.genericErrorRetry')
                     });
                     return Promise.reject(err);
                 })

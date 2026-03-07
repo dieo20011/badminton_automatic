@@ -1,7 +1,7 @@
 <div class="dialog-overlay" (click)="onClose()">
     <div class="dialog-content" (click)="$event.stopPropagation()">
         <div class="dialog-header">
-            <h2>Add New Court</h2>
+            <h2>{{ 'addCourtDialog.title' | translate }}</h2>
             <button class="close-button" (click)="onClose()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path
@@ -12,32 +12,32 @@
 
         <form [formGroup]="courtForm" (ngSubmit)="onSubmit()" class="dialog-form">
             <div class="form-group">
-                <label for="courtName">Court Name</label>
-                <input id="courtName" type="text" formControlName="name" placeholder="E.g. Court A - Floor 1"
+                <label for="courtName">{{ 'addCourtDialog.courtName' | translate }}</label>
+                <input id="courtName" type="text" formControlName="name" [placeholder]="'addCourtDialog.courtNamePlaceholder' | translate"
                     [class.error]="name?.invalid && name?.touched" />
                 <div class="error-message" *ngIf="name?.invalid && name?.touched">
-                    <span *ngIf="name?.errors?.['required'] || name?.errors?.['whitespace']">Court name is required</span>
-                    <span *ngIf="name?.errors?.['minlength']">Court name must be at least 3 characters</span>
+                    <span *ngIf="name?.errors?.['required'] || name?.errors?.['whitespace']">{{ 'addCourtDialog.requiredCourtName' | translate }}</span>
+                    <span *ngIf="name?.errors?.['minlength']">{{ 'addCourtDialog.minCourtName' | translate }}</span>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="courtPassword">Password</label>
+                <label for="courtPassword">{{ 'addCourtDialog.password' | translate }}</label>
                 <input id="courtPassword" type="password" formControlName="password"
-                    placeholder="Enter a password to protect this court" [class.error]="password?.invalid && password?.touched" />
+                    [placeholder]="'addCourtDialog.passwordPlaceholder' | translate" [class.error]="password?.invalid && password?.touched" />
                 <div class="error-message" *ngIf="password?.invalid && password?.touched">
-                    <span *ngIf="password?.errors?.['required'] || password?.errors?.['whitespace']">Password is required</span>
-                    <span *ngIf="password?.errors?.['minlength']">Password must be at least 4 characters</span>
+                    <span *ngIf="password?.errors?.['required'] || password?.errors?.['whitespace']">{{ 'addCourtDialog.requiredPassword' | translate }}</span>
+                    <span *ngIf="password?.errors?.['minlength']">{{ 'addCourtDialog.minPassword' | translate }}</span>
                 </div>
-                <p class="hint">This password will be used to authenticate sub-admins when accessing the court</p>
+                <p class="hint">{{ 'addCourtDialog.passwordHint' | translate }}</p>
             </div>
 
             <div class="dialog-actions">
                 <button type="button" class="cancel-button" (click)="onClose()" [disabled]="isSubmitting">
-                    Cancel
+                    {{ 'common.cancel' | translate }}
                 </button>
                 <button type="submit" class="submit-button" [disabled]="courtForm.invalid || isSubmitting">
-                    <span *ngIf="!isSubmitting">Create Court</span>
+                    <span *ngIf="!isSubmitting">{{ 'addCourtDialog.createCourt' | translate }}</span>
                     <span *ngIf="isSubmitting" class="loading-spinner">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
@@ -45,7 +45,7 @@
                             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none"
                                 stroke-linecap="round" />
                         </svg>
-                        Creating...
+                        {{ 'common.creating' | translate }}
                     </span>
                 </button>
             </div>

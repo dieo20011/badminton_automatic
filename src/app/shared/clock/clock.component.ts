@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal } from '@angular/core';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
     selector: 'app-clock',
@@ -58,6 +59,7 @@ export class ClockComponent implements OnInit, OnDestroy {
     readonly currentDate = signal<string>('');
     readonly currentTime = signal<string>('');
     private intervalId?: ReturnType<typeof setInterval>;
+    constructor(private readonly languageService: LanguageService) {}
 
     ngOnInit(): void {
         this.tick();
@@ -70,8 +72,9 @@ export class ClockComponent implements OnInit, OnDestroy {
 
     private tick(): void {
         const now = new Date();
+        const localeCode = this.languageService.getCurrentLocaleCode();
         this.currentDate.set(
-            now.toLocaleDateString('vi-VN', {
+            now.toLocaleDateString(localeCode, {
                 weekday: 'short',
                 day: '2-digit',
                 month: '2-digit',
@@ -79,7 +82,7 @@ export class ClockComponent implements OnInit, OnDestroy {
             })
         );
         this.currentTime.set(
-            now.toLocaleTimeString('vi-VN', {
+            now.toLocaleTimeString(localeCode, {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',

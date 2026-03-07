@@ -2,32 +2,28 @@
     <header class="page-header">
         <div class="court-info" *ngIf="court">
             <h1>{{ court.name }}</h1>
-            <p>Manage players and track sets</p>
+            <p>{{ 'courtDetail.subtitle' | translate }}</p>
         </div>
         <div class="header-actions">
             <button class="back-button" (click)="goBack()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                </svg>
-                Back
-            </button>
+                </svg>{{ 'common.back' | translate }}</button>
             <button type="button" class="action-button calc-button" (click)="openPriceCalc()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                </svg>
-                Calculate
-            </button>
+                </svg>{{ 'courtDetail.calculate' | translate }}</button>
             <button type="button" class="action-button history-button" (click)="toggleHistory()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                 </svg>
-                {{ showHistory ? 'Hide History' : 'History' }}
+                {{ showHistory ? ('courtDetail.hideHistory' | translate) : ('courtDetail.history' | translate) }}
             </button>
             <button type="button" class="delete-court-button" (click)="deleteCourt()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                 </svg>
-                <span>Delete Court</span>
+                <span>{{ 'courtDetail.deleteCourt' | translate }}</span>
             </button>
         </div>
     </header>
@@ -36,19 +32,19 @@
         <div class="add-player-section">
             <form [formGroup]="addPlayerForm" (ngSubmit)="addPlayer()" class="add-player-form">
                 <div class="form-group">
-                    <input type="text" formControlName="playerName" placeholder="Enter player name..."
+                    <input type="text" formControlName="playerName" [placeholder]="'courtDetail.enterPlayerName' | translate"
                         [class.error]="playerName?.invalid && playerName?.touched" />
                     <div class="error-message" *ngIf="playerName?.invalid && playerName?.touched">
-                        <span *ngIf="playerName?.errors?.['required'] || playerName?.errors?.['whitespace']">Player name is required</span>
-                        <span *ngIf="playerName?.errors?.['minlength']">Name must be at least 2 characters</span>
+                        <span *ngIf="playerName?.errors?.['required'] || playerName?.errors?.['whitespace']">{{ 'courtDetail.requiredPlayerName' | translate }}</span>
+                        <span *ngIf="playerName?.errors?.['minlength']">{{ 'courtDetail.minPlayerName' | translate }}</span>
                     </div>
                 </div>
                 <button type="submit" class="add-button" [disabled]="addPlayerForm.invalid || isAddingPlayer">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                     </svg>
-                    <span *ngIf="!isAddingPlayer">Add Player</span>
-                    <span *ngIf="isAddingPlayer">Adding...</span>
+                    <span *ngIf="!isAddingPlayer">{{ 'courtDetail.addPlayer' | translate }}</span>
+                    <span *ngIf="isAddingPlayer">{{ 'courtDetail.adding' | translate }}</span>
                 </button>
             </form>
         </div>
@@ -56,7 +52,7 @@
         <div class="room-status-bar">
             <div class="online-members" *ngIf="participantLegendItems.length > 0">
                 <span class="online-pulse"></span>
-                <span class="online-label">In room ({{ participantLegendItems.length }}):</span>
+                <span class="online-label">{{ 'courtDetail.inRoom' | translate:{ count: participantLegendItems.length } }}</span>
                 <div class="legend-items">
                     <span class="legend-item" *ngFor="let item of participantLegendItems">
                         <span class="legend-swatch" [style.background-color]="item.color"></span>
@@ -66,7 +62,7 @@
             </div>
             <div class="online-members empty" *ngIf="participantLegendItems.length === 0">
                 <span class="online-pulse idle"></span>
-                <span class="online-label">No one in the room</span>
+                <span class="online-label">{{ 'courtDetail.noOneInRoom' | translate }}</span>
             </div>
         </div>
 
@@ -76,7 +72,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/>
                 </svg>
-                <span>Activity</span>
+                <span>{{ 'courtDetail.activity' | translate }}</span>
                 <span class="log-count">{{ activityLog.length }}</span>
             </div>
             <div class="activity-entries">
@@ -93,10 +89,10 @@
             <table class="players-table">
                 <thead>
                     <tr>
-                        <th class="player-name-header">Player Name</th>
+                        <th class="player-name-header">{{ 'courtDetail.playerNameHeader' | translate }}</th>
                         <th class="checkbox-header" *ngFor="let num of checkboxNumbers">{{ num }}</th>
-                        <th class="total-header">Total</th>
-                        <th class="payment-header">Payment</th>
+                        <th class="total-header">{{ 'courtDetail.total' | translate }}</th>
+                        <th class="payment-header">{{ 'courtDetail.payment' | translate }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,7 +100,7 @@
                         <td class="player-name">
                             <div class="player-name-container">
                                 <span class="name-text">{{ player.name }}</span>
-                                <button type="button" class="delete-player-btn" (click)="deletePlayer(player)" title="Delete Player">
+                                <button type="button" class="delete-player-btn" (click)="deletePlayer(player)" [title]="'courtDetail.deletePlayerAria' | translate">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
                                     </svg>
@@ -127,7 +123,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                 </svg>
-                                <span>{{ player.isPaid ? 'Paid' : 'Unpaid' }}</span>
+                                <span>{{ player.isPaid ? ('courtDetail.paid' | translate) : ('courtDetail.unpaid' | translate) }}</span>
                             </button>
                         </td>
                     </tr>
@@ -140,8 +136,8 @@
                         <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                     </svg>
                 </div>
-                <h3>No players yet</h3>
-                <p>Add the first player to start tracking</p>
+                <h3>{{ 'courtDetail.noPlayers' | translate }}</h3>
+                <p>{{ 'courtDetail.addFirstPlayer' | translate }}</p>
             </div>
         </div>
 
@@ -152,20 +148,20 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                     </svg>
-                    Session History
+                    {{ 'courtDetail.sessionHistory' | translate }}
                 </h3>
             </div>
 
             <div class="history-loading" *ngIf="isLoadingHistory">
                 <div class="spinner"></div>
-                <span>Loading history...</span>
+                <span>{{ 'courtDetail.loadingHistory' | translate }}</span>
             </div>
 
             <div class="history-empty" *ngIf="!isLoadingHistory && courtSessions.length === 0">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                 </svg>
-                <p>No history yet. Use "Calculate" to save the first session.</p>
+                <p>{{ 'courtDetail.noHistory' | translate }}</p>
             </div>
 
             <div class="session-list" *ngIf="!isLoadingHistory && courtSessions.length > 0">
@@ -177,7 +173,7 @@
                         </div>
                         <div class="session-summary-right">
                             <span class="session-total">{{ formatCurrency(s.totalCost) }}</span>
-                            <span class="session-players-count">{{ s.players.length }} players</span>
+                            <span class="session-players-count">{{ 'courtDetail.playersCount' | translate:{ count: s.players.length } }}</span>
                             <svg class="expand-icon" [class.expanded]="expandedSessionId === s.id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
                             </svg>
@@ -187,37 +183,37 @@
                     <div class="session-detail" *ngIf="expandedSessionId === s.id">
                         <div class="session-cost-breakdown">
                             <div class="cost-row">
-                                <span>Court Fee</span>
+                                <span>{{ 'courtDetail.courtFee' | translate }}</span>
                                 <span>{{ formatCurrency(s.courtFee) }}</span>
                             </div>
                             <div class="cost-row" *ngIf="s.shuttlecockCount > 0">
-                                <span>Shuttlecocks ({{ s.shuttlecockCount }} × {{ formatCurrency(s.shuttlecockPrice) }})</span>
+                                <span>{{ 'courtDetail.shuttlecocks' | translate:{ count: s.shuttlecockCount, price: formatCurrency(s.shuttlecockPrice) } }}</span>
                                 <span>{{ formatCurrency(s.shuttlecockCount * s.shuttlecockPrice) }}</span>
                             </div>
                             <div class="cost-row" *ngIf="s.waterFee > 0">
-                                <span>Water</span>
+                                <span>{{ 'courtDetail.water' | translate }}</span>
                                 <span>{{ formatCurrency(s.waterFee) }}</span>
                             </div>
                             <div class="cost-row total-row">
-                                <span>Total</span>
+                                <span>{{ 'courtDetail.total' | translate }}</span>
                                 <span>{{ formatCurrency(s.totalCost) }}</span>
                             </div>
                             <div class="cost-row male-row" *ngIf="s.maleCount > 0">
-                                <span>Male ({{ s.maleCount }} players)</span>
-                                <span>{{ formatCurrency(s.malePerPerson) }}/person</span>
+                                <span>{{ 'courtDetail.malePlayers' | translate:{ count: s.maleCount } }}</span>
+                                <span>{{ formatCurrency(s.malePerPerson) }}{{ 'courtDetail.perPerson' | translate }}</span>
                             </div>
                             <div class="cost-row female-row" *ngIf="s.femaleCount > 0">
-                                <span>Female ({{ s.femaleCount }} players)</span>
-                                <span>{{ formatCurrency(s.femalePerPerson) }}/person</span>
+                                <span>{{ 'courtDetail.femalePlayers' | translate:{ count: s.femaleCount } }}</span>
+                                <span>{{ formatCurrency(s.femalePerPerson) }}{{ 'courtDetail.perPerson' | translate }}</span>
                             </div>
                         </div>
                         <div class="session-players-table" *ngIf="s.players.length > 0">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Player</th>
-                                        <th>Sets</th>
-                                        <th>Status</th>
+                                        <th>{{ 'courtDetail.player' | translate }}</th>
+                                        <th>{{ 'courtDetail.sets' | translate }}</th>
+                                        <th>{{ 'courtDetail.status' | translate }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -226,7 +222,7 @@
                                         <td>{{ p.checkedSets }}</td>
                                         <td>
                                             <span class="paid-badge" [class.paid]="p.isPaid">
-                                                {{ p.isPaid ? 'Paid' : 'Unpaid' }}
+                                                {{ p.isPaid ? ('courtDetail.paid' | translate) : ('courtDetail.unpaid' | translate) }}
                                             </span>
                                         </td>
                                     </tr>
@@ -248,9 +244,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                 </svg>
-                <h2>Session Calculator</h2>
+                <h2>{{ 'courtDetail.sessionCalculator' | translate }}</h2>
             </div>
-            <button type="button" class="modal-close" title="Close" (click)="closePriceCalc()">
+            <button type="button" class="modal-close" [title]="'common.close' | translate" (click)="closePriceCalc()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                 </svg>
@@ -261,79 +257,79 @@
             <div class="calc-grid">
                 <!-- Left: Inputs -->
                 <div class="calc-inputs">
-                    <h4 class="section-label">Costs</h4>
+                    <h4 class="section-label">{{ 'courtDetail.costs' | translate }}</h4>
                     <div class="input-group">
-                        <label>Court Fee (VND)</label>
+                        <label>{{ 'courtDetail.courtFeeVnd' | translate }}</label>
                         <input type="number" formControlName="courtFee" min="0" placeholder="0" />
                     </div>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Shuttlecocks</label>
+                            <label>{{ 'courtDetail.shuttlecocksLabel' | translate }}</label>
                             <input type="number" formControlName="shuttlecockCount" min="0" placeholder="0" />
                         </div>
                         <div class="input-group">
-                            <label>Price/piece (VND)</label>
+                            <label>{{ 'courtDetail.pricePerPiece' | translate }}</label>
                             <input type="number" formControlName="shuttlecockPrice" min="0" placeholder="25000" />
                         </div>
                     </div>
                     <div class="input-group">
-                        <label>Water Fee (VND)</label>
+                        <label>{{ 'courtDetail.waterFeeVnd' | translate }}</label>
                         <input type="number" formControlName="waterFee" min="0" placeholder="0" />
                     </div>
 
-                    <h4 class="section-label section-label--mt">Players</h4>
+                    <h4 class="section-label section-label--mt">{{ 'courtDetail.players' | translate }}</h4>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Male count</label>
+                            <label>{{ 'courtDetail.maleCount' | translate }}</label>
                             <input type="number" formControlName="maleCount" min="0" placeholder="0" />
                         </div>
                         <div class="input-group">
-                            <label>Male fee/person (VND)</label>
+                            <label>{{ 'courtDetail.maleFee' | translate }}</label>
                             <input type="number" formControlName="maleFixedFee" min="0" placeholder="75000" />
                         </div>
                     </div>
                     <div class="input-row">
                         <div class="input-group">
-                            <label>Female count</label>
+                            <label>{{ 'courtDetail.femaleCount' | translate }}</label>
                             <input type="number" formControlName="femaleCount" min="0" placeholder="0" />
                         </div>
                         <div class="input-group">
-                            <label>Female fee/person (VND)</label>
-                            <input type="number" formControlName="femaleFixedFee" min="0" placeholder="0 = auto-calculate" />
+                            <label>{{ 'courtDetail.femaleFee' | translate }}</label>
+                            <input type="number" formControlName="femaleFixedFee" min="0" [placeholder]="'courtDetail.femaleFeePlaceholder' | translate" />
                         </div>
                     </div>
                     <p class="calc-hint">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
                         </svg>
-                        Set to 0 to auto-calculate from the remainder. Default: male 75,000₫/person.
+                        {{ 'courtDetail.calcHint' | translate }}
                     </p>
 
-                    <h4 class="section-label section-label--mt">Notes</h4>
+                    <h4 class="section-label section-label--mt">{{ 'courtDetail.notes' | translate }}</h4>
                     <div class="input-group">
-                        <input type="text" formControlName="notes" placeholder="Session notes (optional)" />
+                        <input type="text" formControlName="notes" [placeholder]="'courtDetail.notesPlaceholder' | translate" />
                     </div>
                 </div>
 
                 <!-- Right: Result -->
                 <div class="calc-result" *ngIf="calcResult">
-                    <h4 class="section-label">Results</h4>
+                    <h4 class="section-label">{{ 'courtDetail.results' | translate }}</h4>
                     <div class="result-card">
                         <div class="result-section">
                             <div class="result-row">
-                                <span class="result-label">Court Fee</span>
+                                <span class="result-label">{{ 'courtDetail.courtFee' | translate }}</span>
                                 <span class="result-value">{{ formatCurrency(priceCalcForm.value.courtFee || 0) }}</span>
                             </div>
                             <div class="result-row" *ngIf="(priceCalcForm.value.shuttlecockCount || 0) > 0">
-                                <span class="result-label">Shuttlecock Fee</span>
+                                <span class="result-label">{{ 'courtDetail.shuttlecockFee' | translate }}</span>
                                 <span class="result-value">{{ formatCurrency(calcResult.totalShuttlecock) }}</span>
                             </div>
                             <div class="result-row" *ngIf="(priceCalcForm.value.waterFee || 0) > 0">
-                                <span class="result-label">Water Fee</span>
+                                <span class="result-label">{{ 'courtDetail.waterFeeVnd' | translate }}</span>
                                 <span class="result-value">{{ formatCurrency(priceCalcForm.value.waterFee || 0) }}</span>
                             </div>
                             <div class="result-row total">
-                                <span class="result-label">Total Cost</span>
+                                <span class="result-label">{{ 'courtDetail.totalCost' | translate }}</span>
                                 <span class="result-value highlight">{{ formatCurrency(calcResult.totalCost) }}</span>
                             </div>
                         </div>
@@ -344,12 +340,12 @@
                             <div class="result-row gender male">
                                 <span class="result-label">
                                     <span class="gender-icon">♂</span>
-                                    Male ({{ priceCalcForm.value.maleCount }}) per person
+                                    {{ 'courtDetail.malePerPerson' | translate:{ count: priceCalcForm.value.maleCount } }}
                                 </span>
                                 <span class="result-value male-color">{{ formatCurrency(calcResult.malePerPerson) }}</span>
                             </div>
                             <div class="result-row sub">
-                                <span class="result-label">Total male collected</span>
+                                <span class="result-label">{{ 'courtDetail.maleCollected' | translate }}</span>
                                 <span class="result-value">{{ formatCurrency(calcResult.maleTotalPay) }}</span>
                             </div>
                         </div>
@@ -358,12 +354,12 @@
                             <div class="result-row gender female">
                                 <span class="result-label">
                                     <span class="gender-icon">♀</span>
-                                    Female ({{ priceCalcForm.value.femaleCount }}) per person
+                                    {{ 'courtDetail.femalePerPerson' | translate:{ count: priceCalcForm.value.femaleCount } }}
                                 </span>
                                 <span class="result-value female-color">{{ formatCurrency(calcResult.femalePerPerson) }}</span>
                             </div>
                             <div class="result-row sub">
-                                <span class="result-label">Total female collected</span>
+                                <span class="result-label">{{ 'courtDetail.femaleCollected' | translate }}</span>
                                 <span class="result-value">{{ formatCurrency(calcResult.femaleTotalPay) }}</span>
                             </div>
                         </div>
@@ -371,7 +367,7 @@
                         <div class="result-divider" *ngIf="(priceCalcForm.value.maleCount || 0) + (priceCalcForm.value.femaleCount || 0) > 0"></div>
 
                         <div class="result-row surplus" [class.positive]="calcResult.surplus >= 0" [class.negative]="calcResult.surplus < 0">
-                            <span class="result-label">{{ calcResult.surplus >= 0 ? 'Surplus' : 'Deficit' }}</span>
+                            <span class="result-label">{{ calcResult.surplus >= 0 ? ('courtDetail.surplus' | translate) : ('courtDetail.deficit' | translate) }}</span>
                             <span class="result-value">{{ formatCurrency(calcResult.surplus >= 0 ? calcResult.surplus : -calcResult.surplus) }}</span>
                         </div>
                     </div>
@@ -380,12 +376,12 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn-cancel" (click)="closePriceCalc()">Cancel</button>
+            <button type="button" class="btn-cancel" (click)="closePriceCalc()">{{ 'common.cancel' | translate }}</button>
             <button type="button" class="btn-save" (click)="saveSession()" [disabled]="isSavingSession || !calcResult">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
                 </svg>
-                {{ isSavingSession ? 'Saving...' : 'Save Session' }}
+                {{ isSavingSession ? ('common.saving' | translate) : ('common.saveSession' | translate) }}
             </button>
         </div>
     </div>
@@ -401,8 +397,8 @@
                         d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                 </svg>
             </div>
-            <h2>Enter password</h2>
-            <p>Enter the court password to access this room. Optionally set your name to see who checked each set (different colors).</p>
+            <h2>{{ 'courtDetail.enterPasswordTitle' | translate }}</h2>
+            <p>{{ 'courtDetail.enterPasswordSubtitle' | translate }}</p>
         </div>
 
         <form [formGroup]="passwordForm" (ngSubmit)="verifyPassword()" class="password-form">
@@ -410,13 +406,13 @@
                 <input
                     type="password"
                     formControlName="password"
-                    placeholder="Password"
+                    [placeholder]="'courtDetail.passwordPlaceholder' | translate"
                     autofocus
                     [class.error]="passwordForm.controls['password'].invalid && passwordForm.controls['password'].touched"
                 />
                 <div class="error-message" *ngIf="passwordForm.controls['password'].invalid && passwordForm.controls['password'].touched">
-                    <span *ngIf="passwordForm.controls['password'].errors?.['required'] || passwordForm.controls['password'].errors?.['whitespace']">Password is required</span>
-                    <span *ngIf="passwordForm.controls['password'].errors?.['minlength']">Password must be at least 4 characters</span>
+                    <span *ngIf="passwordForm.controls['password'].errors?.['required'] || passwordForm.controls['password'].errors?.['whitespace']">{{ 'addCourtDialog.requiredPassword' | translate }}</span>
+                    <span *ngIf="passwordForm.controls['password'].errors?.['minlength']">{{ 'addCourtDialog.minPassword' | translate }}</span>
                 </div>
                 <div class="error-message" *ngIf="passwordError">{{ passwordError }}</div>
             </div>
@@ -424,22 +420,23 @@
                 <input
                     type="text"
                     formControlName="displayName"
-                    placeholder="Your name (optional)"
+                    [placeholder]="'courtDetail.displayNamePlaceholder' | translate"
                     [class.error]="passwordForm.controls['displayName'].invalid && passwordForm.controls['displayName'].touched"
                 />
                 <div class="error-message" *ngIf="passwordForm.controls['displayName'].invalid && passwordForm.controls['displayName'].touched">
-                    <span *ngIf="passwordForm.controls['displayName'].errors?.['maxlength']">Display name must be less than 50 characters</span>
+                    <span *ngIf="passwordForm.controls['displayName'].errors?.['maxlength']">{{ 'courtDetail.displayNameMaxLength' | translate }}</span>
                 </div>
             </div>
 
             <div class="dialog-actions">
                 <button type="button" class="cancel-button" (click)="goBack()">
-                    Cancel
+                    {{ 'common.cancel' | translate }}
                 </button>
                 <button type="submit" class="submit-button" [disabled]="passwordForm.get('password')?.invalid">
-                    Confirm
+                    {{ 'courtDetail.confirm' | translate }}
                 </button>
             </div>
         </form>
     </div>
 </div>
+

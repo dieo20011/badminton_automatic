@@ -6,6 +6,7 @@ import { User, LoginRequest, LoginResponse, RegisterRequest } from '../models/us
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { TranslateService } from '@ngx-translate/core';
 
 const TOKEN_KEY = 'badminton_token';
 const USER_KEY = 'badminton_user';
@@ -20,6 +21,7 @@ export class AuthService {
     public currentUser$ = this.currentUserSubject.asObservable();
 
     private readonly notification = inject(NzNotificationService);
+    private readonly translate = inject(TranslateService);
 
     constructor(private readonly http: HttpClient) {}
 
@@ -40,11 +42,11 @@ export class AuthService {
             .pipe(
                 map((res) => {
                     if (!res?.status) {
-                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? 'Login failed');
+                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('authService.loginFailed'));
                     }
                     const token = typeof res.data === 'string' ? res.data : (res as { message?: string }).message;
                     if (!token || typeof token !== 'string') {
-                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? 'Login failed');
+                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('authService.loginFailed'));
                     }
                     return token;
                 }),
@@ -52,7 +54,7 @@ export class AuthService {
                 tap(({ user }) => {
                     this.setUserToStorage(user);
                     this.currentUserSubject.next(user);
-                    this.notification.success('', 'Signed in successfully');
+                    this.notification.success('', this.translate.instant('authService.signedInSuccess'));
                 }),
                 map(({ user, token }) => ({ user, token }))
             );
@@ -69,11 +71,11 @@ export class AuthService {
             .pipe(
                 map((res) => {
                     if (!res?.status) {
-                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? 'Registration failed');
+                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('authService.registrationFailed'));
                     }
                     const token = typeof res.data === 'string' ? res.data : (res as { message?: string }).message;
                     if (!token || typeof token !== 'string') {
-                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? 'Registration failed');
+                        throw new Error((res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('authService.registrationFailed'));
                     }
                     return token;
                 }),
@@ -81,7 +83,7 @@ export class AuthService {
                 tap(({ user }) => {
                     this.setUserToStorage(user);
                     this.currentUserSubject.next(user);
-                    this.notification.success('', 'Account registered successfully');
+                    this.notification.success('', this.translate.instant('authService.registeredSuccess'));
                 }),
                 map(({ user, token }) => ({ user, token }))
             );

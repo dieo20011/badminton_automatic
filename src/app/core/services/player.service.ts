@@ -12,6 +12,7 @@ import { SignalrService } from './signalr.service';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
     providedIn: 'root'
@@ -22,6 +23,7 @@ export class PlayerService {
     public players$ = this.playersSubject.asObservable();
 
     private readonly notification = inject(NzNotificationService);
+    private readonly translate = inject(TranslateService);
 
     constructor(
         private readonly http: HttpClient,
@@ -114,14 +116,14 @@ export class PlayerService {
             }>>(`${this.apiBase}/${courtId}/players`, request)
         );
         if (!res?.status || !res.data) {
-            const msg = (res as { errorMessage?: string })?.errorMessage ?? 'Add player failed';
+            const msg = (res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('playerService.addPlayerFailed');
             throw new Error(msg);
         }
         const player = this.mapPlayerFromApi(res.data);
         const current = this.playersSubject.value;
         this.playersSubject.next([...current, player]);
         await this.signalrService.sendPlayerAdded(player);
-        this.notification.success('', 'Player added successfully');
+        this.notification.success('', this.translate.instant('playerService.playerAddedSuccess'));
         return player;
     }
 
@@ -135,7 +137,7 @@ export class PlayerService {
         const current = this.playersSubject.value;
         this.playersSubject.next(current.filter((p: Player) => p.id !== playerId));
         await this.signalrService.sendPlayerDeleted(courtId, playerId);
-        this.notification.success('', 'Player deleted successfully');
+        this.notification.success('', this.translate.instant('playerService.playerDeletedSuccess'));
     }
 
     public async updateCheckbox(
@@ -182,7 +184,7 @@ export class PlayerService {
         });
         this.updatePaymentLocally(request);
         await this.signalrService.sendPaymentUpdate(courtId, request);
-        this.notification.success('', 'Payment updated successfully');
+        this.notification.success('', this.translate.instant('playerService.paymentUpdatedSuccess'));
     }
 
     private updatePaymentLocally(request: UpdatePlayerPaymentRequest): void {

@@ -7,6 +7,7 @@ import { SignalrService } from './signalr.service';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { environment } from '../../../environment/environment';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +18,7 @@ export class CourtService {
     public courts$ = this.courtsSubject.asObservable();
 
     private readonly notification = inject(NzNotificationService);
+    private readonly translate = inject(TranslateService);
 
     constructor(
         private http: HttpClient,
@@ -94,14 +96,14 @@ export class CourtService {
             )
         );
         if (!res?.status || !res.data) {
-            const msg = (res as { errorMessage?: string })?.errorMessage ?? 'Create court failed';
+            const msg = (res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('courts.createCourtFailed');
             throw new Error(msg);
         }
         const court = this.mapCourtFromApi(res.data);
         const current = this.courtsSubject.value;
         this.courtsSubject.next([...current, court]);
         await this.signalrService.sendCourtAdded(court);
-        this.notification.success('', 'Court created successfully');
+        this.notification.success('', this.translate.instant('courts.createCourtSuccess'));
         return court;
     }
 
@@ -127,7 +129,7 @@ export class CourtService {
             this.http.post<ApiSuccessResponse<CourtSession>>(`${this.apiUrl}/${courtId}/sessions`, request)
         );
         if (!res?.status || !res.data) {
-            const msg = (res as { errorMessage?: string })?.errorMessage ?? 'Save session failed';
+            const msg = (res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('courtDetail.saveSessionFailed');
             throw new Error(msg);
         }
         return { ...res.data, sessionDate: new Date(res.data.sessionDate), createdDate: new Date(res.data.createdDate) };
@@ -138,11 +140,11 @@ export class CourtService {
             this.http.delete<ApiSuccessResponse<unknown>>(`${this.apiUrl}/${id}`)
         );
         if (!res?.status) {
-            const msg = (res as { errorMessage?: string })?.errorMessage ?? 'Delete court failed';
+            const msg = (res as { errorMessage?: string })?.errorMessage ?? this.translate.instant('courts.deleteCourtFailedTitle');
             throw new Error(msg);
         }
         const current = this.courtsSubject.value.filter((c: Court) => c.id !== id);
         this.courtsSubject.next(current);
-        this.notification.success('', 'Court deleted successfully');
+        this.notification.success('', this.translate.instant('courts.deleteCourtSuccess'));
     }
 }

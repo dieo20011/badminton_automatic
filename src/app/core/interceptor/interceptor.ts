@@ -26,9 +26,17 @@ export const apiCallInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerF
   const showLoading = req.context.get(SHOW_LOADING);
   const showApiErrorMessage = req.context.get(SHOW_API_ERROR_MESSAGE);
 
-  req = req.clone({
-    url: !req.url.includes('http') ? environment.API_DOMAIN.replace(/\/$/, '') + req.url : req.url,
-  });
+  const isAbsoluteUrl = /^https?:\/\//i.test(req.url);
+  const isAssetRequest =
+    req.url.startsWith('/assets/') ||
+    req.url.startsWith('assets/') ||
+    req.url.startsWith('./assets/');
+
+  if (!isAbsoluteUrl && !isAssetRequest) {
+    req = req.clone({
+      url: environment.API_DOMAIN.replace(/\/$/, '') + req.url,
+    });
+  }
 
   runIf(showLoading, () => globalSpinStore.start());
 

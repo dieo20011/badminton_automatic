@@ -5,11 +5,12 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginRequest } from '../../../core/models/user.model';
 import { noWhitespaceValidator } from '../../../core/validators/form.validators';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
 })
@@ -22,7 +23,8 @@ export class LoginComponent {
         private fb: FormBuilder,
         private authService: AuthService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private readonly translate: TranslateService
     ) {
         this.loginForm = this.fb.group({
             username: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
@@ -50,7 +52,9 @@ export class LoginComponent {
                 this.router.navigate([returnUrl]);
             },
             error: (err: { error?: { errorMessage?: string }; message?: string }) => {
-                this.errorMessage = err?.error?.errorMessage ?? err?.message ?? 'Login failed. Please try again.';
+                this.errorMessage = err?.error?.errorMessage
+                    ?? err?.message
+                    ?? this.translate.instant('login.loginFailed');
                 this.isLoading = false;
             },
             complete: () => {

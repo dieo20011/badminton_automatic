@@ -6,11 +6,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/user.model';
 import { noWhitespaceValidator } from '../../../core/validators/form.validators';
 import { emailRegex } from '../../../shared/validator/email-regex.const';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-register',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslateModule],
     templateUrl: './register.component.html',
     styleUrls: ['./register.component.scss']
 })
@@ -18,13 +19,15 @@ export class RegisterComponent {
     registerForm: FormGroup;
     isLoading = false;
     errorMessage = '';
-    errorEmailMessage = 'Invalid email. Email must like: "example@gmail.com"';
+    errorEmailMessage = '';
 
     constructor(
         private fb: FormBuilder,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private readonly translate: TranslateService
     ) {
+        this.errorEmailMessage = this.translate.instant('register.patternEmail');
         this.registerForm = this.fb.group({
             fullName: ['', [Validators.required, Validators.minLength(2), noWhitespaceValidator]],
             userName: ['', [Validators.required, Validators.minLength(3), noWhitespaceValidator]],
@@ -54,7 +57,9 @@ export class RegisterComponent {
                 this.router.navigate(['/courts']);
             },
             error: (err: { error?: { errorMessage?: string }; message?: string }) => {
-                this.errorMessage = err?.error?.errorMessage ?? err?.message ?? 'Registration failed. Please try again.';
+                this.errorMessage = err?.error?.errorMessage
+                    ?? err?.message
+                    ?? this.translate.instant('register.registerFailed');
                 this.isLoading = false;
             },
             complete: () => {

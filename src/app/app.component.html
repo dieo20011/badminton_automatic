@@ -1,2 +1,12 @@
+<div class="language-switcher">
+    <button
+        *ngFor="let lang of supportedLanguages"
+        type="button"
+        [class.active]="languageService.getCurrentLanguage() === lang"
+        (click)="switchLanguage(lang)"
+    >
+        {{ ('language.' + lang) | translate }}
+    </button>
+</div>
 <app-global-sniper />
 <router-outlet />

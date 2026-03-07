@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CourtService } from '../../../core/services/court.service';
 import { CreateCourtRequest } from '../../../core/models/court.model';
 import { noWhitespaceValidator } from '../../../core/validators/form.validators';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-add-court-dialog',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, TranslateModule],
     templateUrl: './add-court-dialog.component.html',
     styleUrls: ['./add-court-dialog.component.scss']
 })

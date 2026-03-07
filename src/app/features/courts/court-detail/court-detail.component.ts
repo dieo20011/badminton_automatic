@@ -19,6 +19,8 @@ import {
 import { CourtSession, PriceCalcResult, SaveCourtSessionRequest } from '../../../core/models/court-session.model';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { CHECKBOX_COLORS } from './court-detail.const';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
 
 export interface ActivityLogEntry {
     id: number;
@@ -31,7 +33,7 @@ export interface ActivityLogEntry {
 @Component({
     selector: 'app-court-detail',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, NzModalModule],
+    imports: [CommonModule, ReactiveFormsModule, NzModalModule, TranslateModule],
     templateUrl: './court-detail.component.html',
     styleUrls: ['./court-detail.component.scss']
 })
@@ -74,7 +76,9 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         private readonly playerService: PlayerService,
         private readonly signalrService: SignalrService,
         private readonly modal: NzModalService,
-        private readonly notification: NzNotificationService
+        private readonly notification: NzNotificationService,
+        private readonly translate: TranslateService,
+        private readonly languageService: LanguageService
     ) {
         this.passwordForm = this.fb.group({
             password: ['', [Validators.required, Validators.minLength(4), noWhitespaceValidator]],
@@ -123,18 +127,25 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
                 const key = `${payload.playerId}-${payload.checkboxIndex}`;
                 if (payload.updatedBy) this.checkboxUpdatedByMap.set(key, payload.updatedBy);
 
-                const selfName = (this.passwordForm.value.displayName as string)?.trim() || 'You';
+                const selfName = (this.passwordForm.value.displayName as string)?.trim() || this.translate.instant('activityLog.you');
                 const isSelf = payload.updatedBy === selfName;
                 if (isSelf) return;
 
-                const actor = payload.updatedBy ?? 'Someone';
+                const actor = payload.updatedBy ?? this.translate.instant('activityLog.someone');
                 const player = this.players.find((p) => p.id === payload.playerId);
-                const playerName = player?.name ?? 'player';
-                const action = payload.isChecked ? 'checked' : 'unchecked';
+                const playerName = player?.name ?? this.translate.instant('activityLog.player');
+                const action = payload.isChecked
+                    ? this.translate.instant('activityLog.checked')
+                    : this.translate.instant('activityLog.unchecked');
                 this.addLog({
                     type: 'checkbox',
                     actor,
-                    message: `${actor} ${action} set ${payload.checkboxIndex + 1} for ${playerName}`
+                    message: this.translate.instant('activityLog.setAction', {
+                        actor,
+                        action,
+                        index: payload.checkboxIndex + 1,
+                        playerName
+                    })
                 });
             });
     }
@@ -142,22 +153,27 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     private subscribeToUserEvents(): void {
         this.signalrService.userJoined$.pipe(takeUntil(this.destroy$)).subscribe((name: string) => {
             this.activeMembers.set(name, this.getColorForUser(name));
-            this.addLog({ type: 'join', actor: name, message: `${name} joined the room` });
+            this.addLog({ type: 'join', actor: name, message: this.translate.instant('activityLog.joinedRoom', { name }) });
         });
         this.signalrService.userLeft$.pipe(takeUntil(this.destroy$)).subscribe((name: string) => {
             this.activeMembers.delete(name);
-            this.addLog({ type: 'leave', actor: name, message: `${name} left the room` });
+            this.addLog({ type: 'leave', actor: name, message: this.translate.instant('activityLog.leftRoom', { name }) });
         });
     }
 
     private subscribeToPlayerEvents(): void {
         this.signalrService.playerAdded$.pipe(takeUntil(this.destroy$)).subscribe((player: Player) => {
-            this.addLog({ type: 'player', message: `Player added: ${player.name}` });
+            this.addLog({ type: 'player', message: this.translate.instant('activityLog.playerAdded', { name: player.name }) });
         });
         this.signalrService.paymentUpdated$.pipe(takeUntil(this.destroy$)).subscribe((req: UpdatePlayerPaymentRequest) => {
             const player = this.players.find((p) => p.id === req.playerId);
-            const name = player?.name ?? 'player';
-            this.addLog({ type: 'payment', message: `${name}: ${req.isPaid ? 'payment collected' : 'payment pending'}` });
+            const name = player?.name ?? this.translate.instant('activityLog.player');
+            this.addLog({
+                type: 'payment',
+                message: req.isPaid
+                    ? this.translate.instant('activityLog.paymentCollected', { name })
+                    : this.translate.instant('activityLog.paymentPending', { name })
+            });
         });
     }
 
@@ -183,20 +199,20 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         const displayName = (this.passwordForm.value.displayName as string)?.trim() || undefined;
         const isValid = await this.courtService.verifyCourtPassword(this.court.id, password);
         if (!isValid) {
-            this.passwordError = 'Invalid password. Please try again.';
+            this.passwordError = this.translate.instant('courtDetail.invalidPassword');
             return;
         }
         this.passwordError = '';
         try {
             await this.signalrService.joinCourt(this.court.id, password, displayName);
             this.showPasswordDialog = false;
-            const selfName = displayName ?? 'You';
+            const selfName = displayName ?? this.translate.instant('activityLog.you');
             this.activeMembers.set(selfName, this.getColorForUser(selfName));
-            this.addLog({ type: 'join', actor: selfName, message: `${selfName} joined the room` });
-            this.notification.success('', 'Successfully joined the room');
+            this.addLog({ type: 'join', actor: selfName, message: this.translate.instant('activityLog.joinedRoom', { name: selfName }) });
+            this.notification.success('', this.translate.instant('courtDetail.joinedRoomSuccess'));
             this.loadPlayers();
         } catch (e: any) {
-            this.passwordError = e.message || 'Failed to join court.';
+            this.passwordError = e.message || this.translate.instant('courtDetail.joinRoomFailed');
             console.error('Join court failed', e);
         }
     }
@@ -239,12 +255,19 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
             isChecked
         };
         const displayName = (this.passwordForm.value.displayName as string)?.trim() || undefined;
-        const actor = displayName ?? 'You';
-        const action = isChecked ? 'checked' : 'unchecked';
+        const actor = displayName ?? this.translate.instant('activityLog.you');
+        const action = isChecked
+            ? this.translate.instant('activityLog.checked')
+            : this.translate.instant('activityLog.unchecked');
         this.addLog({
             type: 'checkbox',
             actor,
-            message: `${actor} ${action} set ${index + 1} for ${player.name}`
+            message: this.translate.instant('activityLog.setAction', {
+                actor,
+                action,
+                index: index + 1,
+                playerName: player.name
+            })
         });
         try {
             await this.playerService.updateCheckbox(this.court.id, request, displayName);
@@ -389,11 +412,11 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         try {
             const saved = await this.courtService.saveCourtSession(this.court.id, request);
             this.courtSessions = [saved, ...this.courtSessions];
-            this.notification.success('', 'Session saved successfully');
+            this.notification.success('', this.translate.instant('courtDetail.saveSessionSuccess'));
             this.closePriceCalc();
         } catch (err) {
             console.error('Save session failed', err);
-            this.notification.error('', err instanceof Error ? err.message : 'Failed to save session');
+            this.notification.error('', err instanceof Error ? err.message : this.translate.instant('courtDetail.saveSessionFailed'));
         } finally {
             this.isSavingSession = false;
         }
@@ -424,15 +447,15 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     }
 
     formatTime(date: Date): string {
-        return new Date(date).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return new Date(date).toLocaleTimeString(this.languageService.getCurrentLocaleCode(), { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
     formatCurrency(amount: number): string {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat(this.languageService.getCurrentLocaleCode(), { style: 'currency', currency: 'VND' }).format(amount);
     }
 
     formatSessionDate(date: Date): string {
-        return new Date(date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return new Date(date).toLocaleDateString(this.languageService.getCurrentLocaleCode(), { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
     goBack(): void {
@@ -444,10 +467,10 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
         const courtName = this.court.name;
         const courtId = this.court.id;
         this.modal.confirm({
-            nzTitle: 'Delete Court',
-            nzContent: `Are you sure you want to delete "${courtName}"? All players in this court will also be removed.`,
-            nzOkText: 'Delete',
-            nzCancelText: 'Cancel',
+            nzTitle: this.translate.instant('courtDetail.deleteCourtConfirmTitle'),
+            nzContent: this.translate.instant('courtDetail.deleteCourtConfirmContent', { name: courtName }),
+            nzOkText: this.translate.instant('common.delete'),
+            nzCancelText: this.translate.instant('common.cancel'),
             nzOkDanger: true,
             nzOnOk: () =>
                 this.courtService.deleteCourt(courtId).then(() => {
@@ -455,8 +478,8 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
                 }).catch((err) => {
                     console.error('Delete court failed', err);
                     this.modal.error({
-                        nzTitle: 'Failed to delete court',
-                        nzContent: err instanceof Error ? err.message : 'An error occurred. Please try again.'
+                        nzTitle: this.translate.instant('courts.deleteCourtFailedTitle'),
+                        nzContent: err instanceof Error ? err.message : this.translate.instant('courts.genericErrorRetry')
                     });
                     return Promise.reject(err);
                 })
@@ -476,17 +499,17 @@ export class CourtDetailComponent implements OnInit, OnDestroy {
     deletePlayer(player: Player): void {
         if (!this.court) return;
         this.modal.confirm({
-            nzTitle: 'Delete Player',
-            nzContent: `Are you sure you want to delete "${player.name}"?`,
-            nzOkText: 'Delete',
-            nzCancelText: 'Cancel',
+            nzTitle: this.translate.instant('courtDetail.deletePlayerTitle'),
+            nzContent: this.translate.instant('courtDetail.deletePlayerConfirmContent', { name: player.name }),
+            nzOkText: this.translate.instant('common.delete'),
+            nzCancelText: this.translate.instant('common.cancel'),
             nzOkDanger: true,
             nzOnOk: async () => {
                 try {
                     await this.playerService.deletePlayer(this.court!.id, player.id);
                 } catch (e) {
                     console.error('Delete player failed', e);
-                    this.notification.error('', e instanceof Error ? e.message : 'Failed to delete player');
+                    this.notification.error('', e instanceof Error ? e.message : this.translate.instant('courtDetail.deletePlayerFailed'));
                 }
             }
         });

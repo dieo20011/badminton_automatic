@@ -6,6 +6,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule, NzModalRef, NZ_MODAL_DATA } from 'ng-zorro-antd/modal';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { ConfirmDialogData } from './popup-confirm.interface';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-pop-up-confirm',
@@ -16,6 +17,7 @@ import { ConfirmDialogData } from './popup-confirm.interface';
     NzPopconfirmModule,
     NzModalModule,
     NzFormModule,
+    TranslateModule
   ],
   templateUrl: './popup-confirm.component.html',
   styleUrl: './popup-confirm.component.scss',
